@@ -73,7 +73,7 @@ Heroku-autoscale has a bunch of settings, so you should be able to tune it for m
         # sets the absolute max as 5 dynos
         AUTOSCALE_MAX_DYNOS = 5
 
-        # Sets the max as 5 dynos from 9 am-5pm local time, and 2 dynos otherwise.
+        # Sets the max as 5 dynos from 9am-5pm local time, and 2 dynos otherwise.
         AUTOSCALE_MAX_DYNOS = {
             "0:00" = 2,
             "9:00" = 5,
@@ -89,11 +89,11 @@ Heroku-autoscale has a bunch of settings, so you should be able to tune it for m
         # sets the absolute min as 2 dynos
         AUTOSCALE_MIN_DYNOS = 2
 
-        # Sets the min as 3 dynos from 9 am-5pm local time, and 1 dyno otherwise.
+        # Sets the min as 3 dynos from 8am-6pm local time, and 1 dyno otherwise.
         AUTOSCALE_MIN_DYNOS = {
             "0:00" = 1,
-            "9:00" = 3,
-            "17:00" = 1
+            "8:00" = 3,
+            "18:00" = 1
         }
         ```
 
@@ -130,6 +130,6 @@ Recent updates (full log in CHANGES)
 Credits:
 ========
 
-This package is not written, maintained, or in any way related to Heroku.  It
+This package is not written, maintained, or in any way affiliated with Heroku.  "Heroku" is copyright Heroku.
 
 Code credits for heroku-autoscale itself are in the AUTHORS file.
