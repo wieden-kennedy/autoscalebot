@@ -1,0 +1,5 @@
+*.pyc
+.DS_Store
+heroku_autoscale.egg-info
+heroku_autoscale.egg-info/*
+dist/*
