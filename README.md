@@ -17,6 +17,11 @@ Easy:
     * `AUTOSCALE_HEROKU_API_KEY`
 
 3. Tune your app (optional, but reccomended)
+4. Add it to your Procfile:
+
+    ```
+    autoscaleworker: project/manage.py do_autoscale
+    ```
 
 
 Usage
@@ -25,7 +30,7 @@ Usage
 How it works
 ------------
 
-Heroku-autoscale pings a heartbeat URL, and makes sure the response time is within the limits you've defined.  If it's outside those bounds (for long enough), it scales up or down your app as needed.  Every part of that description is configurable via the settings.
+Heroku-autoscale pings a heartbeat URL, and makes sure the response time is within the limits you've defined.  If it's outside those bounds (for long enough), it scales up or down your app as needed.  Every part of that description is configurable via the settings.  Note that running heroku-autoscale will require one worker dyno, so if you're hobbying it, running one dyno most of the time, it won't save you cash.
 
 
 Tuning autoscale
@@ -51,11 +56,11 @@ Heroku-autoscale has a bunch of settings, so you should be able to tune it for m
 
 * `AUTOSCALE_MAX_RESPONSE_TIME_IN_MS` 
 
-    * the maximum time a response can take, before it counts as "failing". Defaults to `1000`.
+    * the maximum time a response can take, before it counts as "too slow". Defaults to `1000`.
 
 * `AUTOSCALE_MIN_RESPONSE_TIME_IN_MS` 
 
-    * the minimum time a response can take, before it counts as "passing". Defaults to `200`.
+    * the minimum time a response can take, before it counts as "too fast". Defaults to `200`.
 
 * `AUTOSCALE_NUMBER_OF_FAILS_TO_SCALE_UP_AFTER` 
 
@@ -79,6 +84,9 @@ Heroku-autoscale has a bunch of settings, so you should be able to tune it for m
             "9:00" = 5,
             "17:00" = 2
         }
+
+        # If you're using time-based settings, don't forget to set:
+        TIME_ZONE = 'America/Vancouver'
         ```
 
 * `AUTOSCALE_MIN_DYNOS` 
@@ -106,6 +114,15 @@ Heroku-autoscale has a bunch of settings, so you should be able to tune it for m
 * `AUTOSCALE_NOTIFY_IF_SCALE_DIFF_EXCEEDS_PERIOD_IN_MINUTES` 
     * The time period to count differentials over. Defaults to `None`
 
+* `AUTOSCALE_NOTIFY_IF_NEEDS_EXCEED_MAX`
+    * Send an email to the ADMIN when the app is at AUTOSCALE_MAX_DYNOS, and is the reponses are too slow. This likely means that AUTOSCALE_MAX_DYNOS is too low, but django-heroku-autoscale won't scale it up without your explicit instructions. Defaults to `True`
+
+* `AUTOSCALE_NOTIFY_IF_NEEDS_BELOW_MIN`
+    * Send an email to the ADMIN when the app is at AUTOSCALE_MIN_DYNOS, and is the reponses are below the scale down minimum (but above one).  Useful for learning if you have AUTOSCALE_MIN_DYNOS set too low. Defaults to `False`
+
+* `AUTOSCALE_NOTIFY_ON_SCALE_FAILS`
+    * Send an email to the ADMIN if a call to the scaling API fails for any reason. Note that a scale fail doesn't hurt anything, and scaling will be attempted again in the next heartbeat. Defaults to `False`
+
 
 Making a good heartbeat URL
 ---------------------------
@@ -113,9 +130,31 @@ Making a good heartbeat URL
 The best heartbeat url will test against the bottlenecks your app is most likely to have as it scales up.  The default url hits the cache, database, and disk IO.  To make autoscale fit your app, you're best off writing a custom view that emulates your user's most common actions.
 
 
-Collectstatic gotchas in django
--------------------------------
+Collectstatic gotcha, and some delightful side-effects of autoscale
+-------------------------------------------------------------------
 
+There's a truth about Heroku and all other cloud-based services:  If no traffic hits your dyno, they quietly shut it down until a request comes in.  Normally, that's not a big deal, but due to a confluence of collectstatic looking on the local filesystem for caching, and heroku's read-only (ish) filesystem on dynos, the sanest way to handle static files on heroku is often with a Procfile like this:
+
+    ```
+    web: project/manage.py collectstatic --noinput --settings=envs.live;python project/manage.py run_gunicorn -b "0.0.0.0:$PORT" --workers=4 --settings=envs.live
+    ```
+
+The problem, of course, is that once Heroku kills your dyno, the new one has to re-run collectstatic before it can serve the request - and that can take a while.  `django-heroku-autoscale`'s heartbeats have a very nice side effect: if you set them low enough (every few minutes), and you're properly minimally sized, each dyno will get traffic, and Heroku will never kill them off.
+
+
+Using autoscale outside django
+------------------------------
+
+heroku-autoscale should generally work outside django, but it hasn't been heavily tested.  Here's what you'd need to do:
+
+1. Get your settings injected into the settings file.  (or, provide them as a dictionary-like object at django.conf.settings)
+2. Fire up a single, long-running thread that will be restarted.
+3. In that thread, run:
+
+    ```python
+    from heroku_autoscale.tasks import start_heartbeat
+    start_heartbeat()
+    ```
 
 
 
