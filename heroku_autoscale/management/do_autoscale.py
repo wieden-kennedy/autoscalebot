@@ -6,4 +6,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         from heroku_autoscale.tasks import start_heartbeat
-        start_heartbeat()
+        from heroku_autoscale.conf import settings
+
+        start_heartbeat(settings=settings)

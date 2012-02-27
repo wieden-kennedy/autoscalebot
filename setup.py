@@ -6,13 +6,13 @@ ROOT_DIR = os.path.dirname(__file__)
 SOURCE_DIR = os.path.join(ROOT_DIR)
 
 setup(
-    name="django-heroku-autoscale",
-    description="Heroku autoscaling for Django apps",
+    name="heroku-autoscale-web-dynos",
+    description="Automatic scaling of web dynos on Heroku",
     author="Steven Skoczen",
     author_email="steven.skoczen@wk.com",
     url="https://github.com/wieden-kennedy/django-heroku-autoscale",
     version="0.1",
-    install_requires=["celery", "django-extensions"],
+    install_requires=["celery", "django-extensions", "heroku"],
     #  django-celery-with-redis ?
     packages=find_packages(),
     zip_safe=False,

@@ -9,6 +9,9 @@ SCALE_ACTION_CHOICES = [
     ("down", "Down"),
 ]
 
+TOO_LOW = "low"
+JUST_RIGHT = "right"
+TOO_HIGH = "high"
 
 class MissingParameter(Exception):
     pass

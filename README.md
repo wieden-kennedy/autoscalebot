@@ -1,4 +1,4 @@
-Django-heroku-autoscale has one simple aim: to make scaling on heroku something you can stop worrying about.
+autoscale-heroku has one simple aim: to make scaling heroku something you can stop worrying about.  It also plays nicely with django.
 
 
 Installing
@@ -7,7 +7,7 @@ Installing
 Easy:
 
 
-1. ```pip install heroku-autoscale```
+1. ```pip install autoscale-heroku```
 
 2. settings.py: ```INSTALLED_APPS += ("heroku_autoscale",)```
 
@@ -64,7 +64,7 @@ Heroku-autoscale has a bunch of settings, so you should be able to tune it for m
 
 * `AUTOSCALE_NUMBER_OF_FAILS_TO_SCALE_UP_AFTER` 
 
-    * the number of consecutive fails before autoscale adds dynos. Defaults to `3`.
+    * the number of consecutive fails (timeouts or 500s) before autoscale adds dynos. Defaults to `3`.
 
 * `AUTOSCALE_NUMBER_OF_PASSES_TO_SCALE_DOWN_AFTER` 
 
