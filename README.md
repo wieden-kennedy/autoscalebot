@@ -113,4 +113,4 @@ Credits:
 
 This package is not written, maintained, or in any way related to Heroku.  It
 
-Code credits for salad itself are in the AUTHORS file.
+Code credits for heroku-autoscale itself are in the AUTHORS file.
