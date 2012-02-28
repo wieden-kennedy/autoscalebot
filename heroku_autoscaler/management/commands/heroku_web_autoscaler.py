@@ -4,7 +4,8 @@ from heroku_autoscaler.tasks import start_heartbeat
 
 
 class Command(BaseCommand):
-    help = 'Runs the heroku autoscaling heartbeat'
+    help = """Runs the heroku autoscaling heartbeat,
+              using django's settings."""
 
     def handle(self, *args, **options):
         start_heartbeat()

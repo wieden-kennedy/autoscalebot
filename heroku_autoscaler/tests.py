@@ -217,6 +217,15 @@ class TestHerokuAutoscaler:
         self.test_scaler.do_autoscale()
         assert_equals(self.test_scaler.num_dynos, 1)
 
+    def test_time_based_scale_up_works(self):
+        assert True == "Test written"
+
+    def test_time_based_scale_down_works(self):
+        assert True == "Test written"
+
+    def test_custom_increments_work(self):
+        assert True == "Test written"
+
     def test_ping_and_store_for_valid_url(self):
         urllib2.urlopen = mock_valid_urlopen
         assert_equals(self.test_scaler.results, [])
@@ -241,7 +250,20 @@ class TestHerokuAutoscaler:
         self.test_scaler.ping_and_store()
         assert_equals(self.test_scaler.results, [TOO_LOW])
 
+    def test_notify_if_scale_diff_exceeds_threshold_works(self):
+        assert True == "Test written"
+
+    def test_notify_if_scale_diff_exceeds_period_in_minutes_works(self):
+        assert True == "Test written"
+
+    def test_notify_if_needs_exceed_max_works(self):
+        assert True == "Test written"
+
+    def test_notify_if_needs_below_min_works(self):
+        assert True == "Test written"
+
+    def test_notify_on_scale_fails_works(self):
+        assert True == "Test written"
+
 # TODO:
-# django tests
-# test for each setting covered.
-# test for each warning covered
+    # django tests

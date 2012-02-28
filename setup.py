@@ -1,6 +1,7 @@
 #/usr/bin/env python
 import os
 from setuptools import setup, find_packages
+from heroku_autoscaler import version
 
 ROOT_DIR = os.path.dirname(__file__)
 SOURCE_DIR = os.path.join(ROOT_DIR)
@@ -11,7 +12,7 @@ setup(
     author="Steven Skoczen",
     author_email="steven.skoczen@wk.com",
     url="https://github.com/wieden-kennedy/django-heroku-autoscale",
-    version="0.1",
+    version=version,
     install_requires=["heroku"],
     packages=find_packages(),
     zip_safe=False,
@@ -27,6 +28,6 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
     entry_points={
-        'console_scripts': ['heroku_web_autoscaler = heroku_autoscaler.tasks:start_heartbeat'],
+        'console_scripts': ['heroku_web_autoscaler = heroku_autoscaler.cli:main'],
     },
 )

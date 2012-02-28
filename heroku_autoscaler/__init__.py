@@ -1,3 +1,4 @@
+version = 0.1
 TOO_LOW = "low"
 JUST_RIGHT = "right"
 TOO_HIGH = "high"

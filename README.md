@@ -9,20 +9,18 @@ If you're using not django:
 
 1. ```pip install heroku-web-autoscaler```, and add it to your `requirements.txt`
 
-2. Create an `autoscale_settings.py` file, and put anywhere it on your python path. 
+2. Create a settings file in your project root. We call it `autoscale_settings.py`, you can call it whatever you like.
 3. Set these settings for your app, as well as any optional tuning settings. See autoscale_settings.py.dist for an example.
 
     ```python
-    settings = {}
-
-    settings["HEROKU_APP_NAME"] = "my-app-name"
-    settings["HEROKU_API_KEY"] = "1234567890abcdef1234567890abcdef"
+    HEROKU_APP_NAME = "my-app-name"
+    HEROKU_API_KEY = "1234567890abcdef1234567890abcdef"
     ```
 
 4. Add autoscale to your `Procfile`:
 
     ```
-    autoscaleworker: heroku_web_autoscaler
+    autoscaleworker: heroku_web_autoscaler --settings=autoscale_settings.py
     ```
 
 
