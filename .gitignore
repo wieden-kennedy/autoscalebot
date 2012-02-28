@@ -3,3 +3,6 @@
 heroku_autoscale.egg-info
 heroku_autoscale.egg-info/*
 dist/*
+autoscale_settings.py
+heroku_autoscale_web_dynos.egg-info/*
+build/*
