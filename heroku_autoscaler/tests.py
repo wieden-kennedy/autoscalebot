@@ -2,24 +2,29 @@ import time
 import urllib2
 from nose.tools import assert_equals
 from heroku_autoscaler import TOO_LOW, JUST_RIGHT, TOO_HIGH
-from heroku_autoscaler.conf import settings
 from heroku_autoscaler.models import HerokuAutoscaler
 
-settings.HEROKU_APP_NAME = "test-app"
-settings.HEROKU_API_KEY = "1234567"
-settings.HEARTBEAT_INTERVAL_IN_SECONDS = 30
-settings.HEARTBEAT_URL = 'http://www.google.com'
-settings.MAX_RESPONSE_TIME_IN_MS = 1000
-settings.MIN_RESPONSE_TIME_IN_MS = 400
-settings.NUMBER_OF_FAILS_TO_SCALE_UP_AFTER = 3
-settings.NUMBER_OF_PASSES_TO_SCALE_DOWN_AFTER = 5
-settings.MAX_DYNOS = 3
-settings.MIN_DYNOS = 1
-settings.INCREMENT = 1
-settings.NOTIFY_IF_SCALE_DIFF_EXCEEDS_THRESHOLD = None
-settings.NOTIFY_IF_SCALE_DIFF_EXCEEDS_PERIOD_IN_MINUTES = None
-settings.NOTIFY_IF_NEEDS_EXCEED_MAX = True
-settings.NOTIFY_IF_NEEDS_BELOW_MIN = False
+
+class TestSettings:
+    pass
+
+test_settings = TestSettings()
+
+test_settings.HEROKU_APP_NAME = "test-app"
+test_settings.HEROKU_API_KEY = "1234567"
+test_settings.HEARTBEAT_INTERVAL_IN_SECONDS = 30
+test_settings.HEARTBEAT_URL = 'http://www.google.com'
+test_settings.MAX_RESPONSE_TIME_IN_MS = 1000
+test_settings.MIN_RESPONSE_TIME_IN_MS = 400
+test_settings.NUMBER_OF_FAILS_TO_SCALE_UP_AFTER = 3
+test_settings.NUMBER_OF_PASSES_TO_SCALE_DOWN_AFTER = 5
+test_settings.MAX_DYNOS = 3
+test_settings.MIN_DYNOS = 1
+test_settings.INCREMENT = 1
+test_settings.NOTIFY_IF_SCALE_DIFF_EXCEEDS_THRESHOLD = None
+test_settings.NOTIFY_IF_SCALE_DIFF_EXCEEDS_PERIOD_IN_MINUTES = None
+test_settings.NOTIFY_IF_NEEDS_EXCEED_MAX = True
+test_settings.NOTIFY_IF_NEEDS_BELOW_MIN = False
 
 
 class MockHerokuProcesses:
@@ -100,7 +105,7 @@ class TestHerokuAutoscaler:
     @property
     def test_scaler(self):
         if not hasattr(self, "_test_scaler"):
-            self._test_scaler = MockHerokuAutoscaler()
+            self._test_scaler = MockHerokuAutoscaler(test_settings)
         return self._test_scaler
 
     def test_heroku_scale(self):

@@ -34,7 +34,7 @@ If you are using django:
     * `AUTOSCALE_HEROKU_APP_NAME`
     * `AUTOSCALE_HEROKU_API_KEY`
 
-3. If you want the built-in test view:
+3. If you want the built-in test view (v0.2):
     
     * settings.py: 
 
@@ -100,7 +100,7 @@ Heroku-autoscale has a bunch of settings, so you should be able to tune it for m
 
 * `MAX_DYNOS` 
 
-    * the absolute maximum number of dynos. Default to `3`. This value is either an integer, or a dictionary of time/max pairs.  E.g.
+    * the absolute maximum number of dynos. Default to `3`. This value is either an integer, or (v0.2) a dictionary of time/max pairs.  E.g.
 
         ```python
         # sets the absolute max as 5 dynos
@@ -119,7 +119,7 @@ Heroku-autoscale has a bunch of settings, so you should be able to tune it for m
 
 * `MIN_DYNOS` 
 
-    * the absolute minimum number of dynos. Default to `1`. This value is either an integer, or a dictionary of time/max pairs. E.g.
+    * the absolute minimum number of dynos. Default to `1`. This value is either an integer, or (v0.2) a dictionary of time/max pairs. E.g.
 
         ```python
         # sets the absolute min as 2 dynos
@@ -137,19 +137,19 @@ Heroku-autoscale has a bunch of settings, so you should be able to tune it for m
     * the number of dynos to add or remove on scaling. Defaults to `1`.
 
 * `NOTIFY_IF_SCALE_DIFF_EXCEEDS_THRESHOLD` 
-    * Paired with the setting below, this setting will send an email to the `ADMINS` email if the scale differential in the given time period exceeds the threshold.  For example, if I see a scale of more than 10 dynos within 30 minutes, something intesting is happening with the side.  I'd probably like to know.  Defaults to `None`, and is disabled.
+    * (v0.2) Paired with the setting below, this setting will send an email to the `ADMINS` email if the scale differential in the given time period exceeds the threshold.  For example, if I see a scale of more than 10 dynos within 30 minutes, something intesting is happening with the side.  I'd probably like to know.  Defaults to `None`, and is disabled.
 
 * `NOTIFY_IF_SCALE_DIFF_EXCEEDS_PERIOD_IN_MINUTES` 
-    * The time period to count differentials over. Defaults to `None`.
+    * (v0.2) The time period to count differentials over. Defaults to `None`.
 
 * `NOTIFY_IF_NEEDS_EXCEED_MAX`
-    * Send an email to the `ADMINS` when the app is at `MAX_DYNOS`, and the reponses are too slow. This likely means that `MAX_DYNOS` is too low, but django-heroku-autoscale won't scale it up without your explicit instructions. Defaults to `True`.
+    * (v0.2) Send an email to the `ADMINS` when the app is at `MAX_DYNOS`, and the reponses are too slow. This likely means that `MAX_DYNOS` is too low, but django-heroku-autoscale won't scale it up without your explicit instructions. Defaults to `True`.
 
 * `NOTIFY_IF_NEEDS_BELOW_MIN`
-    * Send an email to the `ADMINS` when the app is at `MIN_DYNOS`, and the reponses are below the scale down minimum (but above one).  Useful for learning if you have `MIN_DYNOS` set too low. Defaults to `False`.
+    * (v0.2) Send an email to the `ADMINS` when the app is at `MIN_DYNOS`, and the reponses are below the scale down minimum (but above one).  Useful for learning if you have `MIN_DYNOS` set too low. Defaults to `False`.
 
 * `NOTIFY_ON_SCALE_FAILS`
-    * Send an email to the `ADMINS` if a call to the scaling API fails for any reason. Note that a scale fail doesn't hurt anything, and scaling will be attempted again in the next heartbeat. Defaults to `False`.
+    * (v0.2) Send an email to the `ADMINS` if a call to the scaling API fails for any reason. Note that a scale fail doesn't hurt anything, and scaling will be attempted again in the next heartbeat. Defaults to `False`.
 
 
 Making a good heartbeat URL
@@ -168,6 +168,15 @@ There's a truth about Heroku and all other cloud-based services:  If no traffic 
     ```
 
 The problem, of course, is that once Heroku kills your dyno, the new one has to re-run collectstatic before it can serve the request - and that can take a while.  `django-heroku-autoscale`'s heartbeats have a very nice side effect: if you set them low enough (every couple minutes for small sites), and you're properly minimally sized, each dyno will get traffic, and Heroku will never kill them off.
+
+Roadmap 
+------------------------------------
+
+*0.2*
+
+* Better django integration (test url and view)
+* Time-based MAX and MIN settings
+* Notifications
 
 
 

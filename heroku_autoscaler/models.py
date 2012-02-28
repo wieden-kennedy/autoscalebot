@@ -75,7 +75,7 @@ class HerokuAutoscaler(object):
                 self.scale_up()
             elif self.settings.NOTIFY_IF_NEEDS_EXCEED_MAX:
                 # We're already at the max. Notify if enabled.
-                assert True == "the notification email code is written"
+                print "The notification email code is not written"
 
         elif self.needs_scale_down:
             if self.num_dynos > self.settings.MIN_DYNOS:
@@ -83,7 +83,7 @@ class HerokuAutoscaler(object):
                 self.scale_down()
             elif self.settings.NOTIFY_IF_NEEDS_BELOW_MIN and self.num_dynos != 1:
                 # We're at the min, but could scale down further. Notify if enabled.
-                assert True == "the notification email code is written"
+                print "The notification email code is not written"
 
     def ping_and_store(self):
         """Pings the url, records the response time, and stores the results."""
