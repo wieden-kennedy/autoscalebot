@@ -7,7 +7,7 @@ Installing
 If you're using not django:
 ---------------------------
 
-1. ```pip install heroku-web-autoscaler```
+1. ```pip install heroku-web-autoscaler```, and add it to your `requirements.txt`
 
 2. Create an `autoscale_settings.py` file, and put anywhere it on your python path. 
 3. Set these settings for your app, as well as any optional tuning settings. See autoscale_settings.py.dist for an example.
@@ -29,7 +29,7 @@ If you're using not django:
 If you are using django:
 -----------------------
 
-1. ```pip install heroku-web-autoscaler```
+1. ```pip install heroku-web-autoscaler```, and add it to your `requirements.txt`
 
 2. Set these required settings in your `settings.py`, as well as any optional tuning settings.  Prefix all names on the settings list below with `AUTOSCALE_`
 
@@ -60,7 +60,7 @@ Usage
 How it works
 ------------
 
-Heroku-autoscale pings a heartbeat URL, and makes sure the response time is within the limits you've defined.  If it's outside those bounds enough times, it scales up or down your app as needed.  Every part of that description is configurable via the settings.  Note that running heroku-autoscale will require one worker dyno, so if you're hobbying it and running one dyno most of the time, it won't save you any cash. It doesn't have to be run on heroku though - any internet-enabled computer will do.
+Heroku-autoscale pings a heartbeat URL, and makes sure the response time is within the limits you've defined.  If it's outside those bounds enough times in a row, it scales up or down your app as needed.  Every part of that description is configurable via the settings.  Note that running heroku-autoscale will require one worker dyno, so if you're hobbying it and running one dyno most of the time, it won't save you any cash. It doesn't have to be run on heroku though - any internet-enabled computer will do.
 
 
 Available settings
@@ -139,19 +139,19 @@ Heroku-autoscale has a bunch of settings, so you should be able to tune it for m
     * the number of dynos to add or remove on scaling. Defaults to `1`.
 
 * `NOTIFY_IF_SCALE_DIFF_EXCEEDS_THRESHOLD` 
-    * Paired with the setting below, this setting will send an email to the ADMIN email if the scale differential in the given time period exceeds the threshold.  For example, if I see a scale of more than 10 dynos within 30 minutes, something intesting is happening with the side.  I'd probably like to know.  Defaults to `None`, and is disabled.
+    * Paired with the setting below, this setting will send an email to the `ADMINS` email if the scale differential in the given time period exceeds the threshold.  For example, if I see a scale of more than 10 dynos within 30 minutes, something intesting is happening with the side.  I'd probably like to know.  Defaults to `None`, and is disabled.
 
 * `NOTIFY_IF_SCALE_DIFF_EXCEEDS_PERIOD_IN_MINUTES` 
-    * The time period to count differentials over. Defaults to `None`
+    * The time period to count differentials over. Defaults to `None`.
 
 * `NOTIFY_IF_NEEDS_EXCEED_MAX`
-    * Send an email to the ADMIN when the app is at MAX_DYNOS, and is the reponses are too slow. This likely means that MAX_DYNOS is too low, but django-heroku-autoscale won't scale it up without your explicit instructions. Defaults to `True`
+    * Send an email to the `ADMINS` when the app is at `MAX_DYNOS`, and the reponses are too slow. This likely means that `MAX_DYNOS` is too low, but django-heroku-autoscale won't scale it up without your explicit instructions. Defaults to `True`.
 
 * `NOTIFY_IF_NEEDS_BELOW_MIN`
-    * Send an email to the ADMIN when the app is at MIN_DYNOS, and is the reponses are below the scale down minimum (but above one).  Useful for learning if you have MIN_DYNOS set too low. Defaults to `False`
+    * Send an email to the `ADMINS` when the app is at `MIN_DYNOS`, and the reponses are below the scale down minimum (but above one).  Useful for learning if you have `MIN_DYNOS` set too low. Defaults to `False`.
 
 * `NOTIFY_ON_SCALE_FAILS`
-    * Send an email to the ADMIN if a call to the scaling API fails for any reason. Note that a scale fail doesn't hurt anything, and scaling will be attempted again in the next heartbeat. Defaults to `False`
+    * Send an email to the `ADMINS` if a call to the scaling API fails for any reason. Note that a scale fail doesn't hurt anything, and scaling will be attempted again in the next heartbeat. Defaults to `False`.
 
 
 Making a good heartbeat URL
@@ -160,16 +160,16 @@ Making a good heartbeat URL
 The best heartbeat url will test against the bottlenecks your app is most likely to have as it scales up.  The bundled django app provides a url that hits the cache, database, and disk IO.  To make autoscale fit your app, you're best off writing a custom view that emulates your user's most common actions.
 
 
-Django's collectstatic gotcha, and some delightful side-effects of autoscale
+Django's staticfiles gotcha, and some delightful side-effects of autoscale
 ----------------------------------------------------------------------------
 
-There's a truth about Heroku and all other cloud-based services:  If no traffic hits your dyno, they quietly shut it down until a request comes in.  Normally, that's not a big deal, but due to a confluence of collectstatic looking at the local filesystem for unique-filename caching, and heroku's read-only (ish) filesystem on dynos, the sanest way to handle static files on heroku is often with a Procfile like this:
+There's a truth about Heroku and all other cloud-based services:  If no traffic hits your dyno, they quietly shut it down until a request comes in.  Normally, that's not a big deal, but due to a confluence of staticfiles looking at the local filesystem for unique-filename caching, and heroku's read-only (ish) filesystem on dynos, the sanest way to handle static files on heroku is often with a Procfile like this:
 
     ```
-    web: project/manage.py collectstatic --noinput --settings=envs.live;python project/manage.py run_gunicorn -b "0.0.0.0:$PORT" --workers=4
+    web: project/manage.py collectstatic --noinput;python project/manage.py run_gunicorn -b "0.0.0.0:$PORT" --workers=4
     ```
 
-The problem, of course, is that once Heroku kills your dyno, the new one has to re-run collectstatic before it can serve the request - and that can take a while.  `django-heroku-autoscale`'s heartbeats have a very nice side effect: if you set them low enough (every few minutes), and you're properly minimally sized, each dyno will get traffic, and Heroku will never kill them off.
+The problem, of course, is that once Heroku kills your dyno, the new one has to re-run collectstatic before it can serve the request - and that can take a while.  `django-heroku-autoscale`'s heartbeats have a very nice side effect: if you set them low enough (every couple minutes for small sites), and you're properly minimally sized, each dyno will get traffic, and Heroku will never kill them off.
 
 
 
