@@ -4,6 +4,7 @@ try:
 except:
     django_settings = {}
 
+
 class SettingsObj:
     pass
 

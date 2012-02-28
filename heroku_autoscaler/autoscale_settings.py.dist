@@ -1,0 +1,17 @@
+settings = {}
+
+settings["HEROKU_APP_NAME"] = None
+settings["HEROKU_API_KEY"] = None
+settings["HEARTBEAT_INTERVAL_IN_SECONDS"] = 30
+settings["HEARTBEAT_URL"] = '/heroku-autoscale/heartbeat/v1'
+settings["MAX_RESPONSE_TIME_IN_MS"] = 1000
+settings["MIN_RESPONSE_TIME_IN_MS"] = 200
+settings["NUMBER_OF_FAILS_TO_SCALE_UP_AFTER"] = 3
+settings["NUMBER_OF_PASSES_TO_SCALE_DOWN_AFTER"] = 5
+settings["MAX_DYNOS"] = 3
+settings["MIN_DYNOS"] = 1
+settings["INCREMENT"] = 1
+settings["NOTIFY_IF_SCALE_DIFF_EXCEEDS_THRESHOLD"] = None
+settings["NOTIFY_IF_SCALE_DIFF_EXCEEDS_PERIOD_IN_MINUTES"] = None
+settings["NOTIFY_IF_NEEDS_EXCEED_MAX"] = True
+settings["NOTIFY_IF_NEEDS_BELOW_MIN"] = False

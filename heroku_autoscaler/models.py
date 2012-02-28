@@ -20,8 +20,7 @@ class HerokuAutoscaler(object):
 
     def heroku_scale(self, dynos=None):
         if dynos and settings.HEROKU_APP_NAME and settings.HEROKU_API_KEY:
-            # self.heroku_app.processes['web'].scale(dynos)
-            print "scaling to %s" % dynos
+            self.heroku_app.processes['web'].scale(dynos)
             self._num_dynos = dynos
 
         else:
@@ -29,7 +28,6 @@ class HerokuAutoscaler(object):
             raise MissingParameter
 
     def heroku_get_num_dynos(self):
-        print self.heroku_app.processes['web']
         return len([1 for i in self.heroku_app.processes['web']])
 
     @property
@@ -71,8 +69,7 @@ class HerokuAutoscaler(object):
 
     def do_autoscale(self):
         """Calls scale up and down, based on need."""
-        print self.results
-        if (self.needs_scale_up):
+        if self.needs_scale_up:
             if self.num_dynos < settings.MAX_DYNOS:
                 # We have room, scale up.
                 self.scale_up()
@@ -80,11 +77,11 @@ class HerokuAutoscaler(object):
                 # We're already at the max. Notify if enabled.
                 assert True == "the notification email code is written"
 
-        elif (self.needs_scale_down):
+        elif self.needs_scale_down:
             if self.num_dynos > settings.MIN_DYNOS:
                 # We have room, scale down.
                 self.scale_down()
-            elif settings.NOTIFY_IF_NEEDS_EXCEED_MAX and self.num_dynos != 1:
+            elif settings.NOTIFY_IF_NEEDS_BELOW_MIN and self.num_dynos != 1:
                 # We're at the min, but could scale down further. Notify if enabled.
                 assert True == "the notification email code is written"
 
@@ -102,7 +99,6 @@ class HerokuAutoscaler(object):
 
         diff = end_time - start_time
         diff = diff.microseconds / 1000
-        print diff
 
         if diff > settings.MAX_RESPONSE_TIME_IN_MS or errored_out:
             result = TOO_HIGH
@@ -114,6 +110,14 @@ class HerokuAutoscaler(object):
         self.add_to_history(result)
 
     def full_heartbeat(self):
-        print "beat"
         self.ping_and_store()
         self.do_autoscale()
+
+try:
+    from django.db import models
+
+    class HeartbeatTestData(models.Model):
+        number = models.IntegerField(blank=False, null=False)
+
+except:
+    pass

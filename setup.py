@@ -12,8 +12,7 @@ setup(
     author_email="steven.skoczen@wk.com",
     url="https://github.com/wieden-kennedy/django-heroku-autoscale",
     version="0.1",
-    install_requires=["celery", "django-extensions", "heroku"],
-    #  django-celery-with-redis ?
+    install_requires=["heroku"],
     packages=find_packages(),
     zip_safe=False,
     include_package_data=True,
@@ -27,4 +26,7 @@ setup(
         "Topic :: Internet :: WWW/HTTP",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
+    entry_points={
+        'console_scripts': ['heroku_web_autoscaler = heroku_autoscale.tasks:start_heartbeat'],
+    },
 )
