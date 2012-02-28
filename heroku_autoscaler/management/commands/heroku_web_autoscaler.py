@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from heroku_autoscale.tasks import start_heartbeat
+from heroku_autoscaler.tasks import start_heartbeat
 
 
 class Command(BaseCommand):

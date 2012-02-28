@@ -1,8 +1,8 @@
 import datetime
 import heroku
 import urllib2
-from heroku_autoscale.conf import settings
-from heroku_autoscale import MissingParameter, TOO_LOW, JUST_RIGHT, TOO_HIGH
+from heroku_autoscaler.conf import settings
+from heroku_autoscaler import MissingParameter, TOO_LOW, JUST_RIGHT, TOO_HIGH
 
 
 class HerokuAutoscaler(object):
@@ -108,6 +108,8 @@ class HerokuAutoscaler(object):
             result = JUST_RIGHT
 
         self.add_to_history(result)
+        print result
+        print diff
 
     def full_heartbeat(self):
         self.ping_and_store()

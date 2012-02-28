@@ -1,14 +1,14 @@
 from time import sleep
 
-from heroku_autoscale import MissingParameter
-from heroku_autoscale.models import HerokuAutoscaler
+from heroku_autoscaler import MissingParameter
+from heroku_autoscaler.models import HerokuAutoscaler
 
 autoscale = HerokuAutoscaler()
 
 
 def start_heartbeat(settings=None):
     if not settings:
-        from heroku_autoscale.conf import settings
+        from heroku_autoscaler.conf import settings
 
     try:
         assert settings.HEARTBEAT_INTERVAL_IN_SECONDS is not None

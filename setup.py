@@ -27,6 +27,6 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
     entry_points={
-        'console_scripts': ['heroku_web_autoscaler = heroku_autoscale.tasks:start_heartbeat'],
+        'console_scripts': ['heroku_web_autoscaler = heroku_autoscaler.tasks:start_heartbeat'],
     },
 )

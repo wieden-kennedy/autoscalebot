@@ -11,14 +11,15 @@ If you're using not django:
 
 2. Create an `autoscale_settings.py` file, and put anywhere it on your python path. 
 3. Set these settings for your app, as well as any optional tuning settings. See autoscale_settings.py.dist for an example.
-    ```
+
+    ```python
     settings = {}
 
     settings["HEROKU_APP_NAME"] = "my-app-name"
     settings["HEROKU_API_KEY"] = "1234567890abcdef1234567890abcdef"
     ```
 
-4. Add autoscale to your Procfile:
+4. Add autoscale to your `Procfile`:
 
     ```
     autoscaleworker: heroku_web_autoscaler
@@ -35,7 +36,7 @@ If you are using django:
     * `AUTOSCALE_HEROKU_APP_NAME`
     * `AUTOSCALE_HEROKU_API_KEY`
 
-3. If you want the built-in test url:
+3. If you want the built-in test view:
     
     * settings.py: 
 
