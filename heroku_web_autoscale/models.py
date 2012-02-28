@@ -2,7 +2,7 @@ import time
 import heroku
 import urllib2
 from heroku_web_autoscale import MissingParameter, TOO_LOW, JUST_RIGHT, TOO_HIGH
-from heroku_web_autoscale.logging import logger
+from heroku_web_autoscale.logger import logger
 
 
 class HerokuAutoscaler(object):
@@ -100,6 +100,7 @@ class HerokuAutoscaler(object):
 
         diff = end_time - start_time
         diff = diff * 1000
+        logger.info("Response time: %sms." % diff)
 
         if diff > self.settings.MAX_RESPONSE_TIME_IN_MS or errored_out:
             result = TOO_HIGH
