@@ -2,6 +2,7 @@ import time
 import heroku
 import urllib2
 from heroku_web_autoscale import MissingParameter, TOO_LOW, JUST_RIGHT, TOO_HIGH
+from heroku_web_autoscale.logging import logger
 
 
 class HerokuAutoscaler(object):
@@ -22,7 +23,7 @@ class HerokuAutoscaler(object):
         if dynos and self.settings.HEROKU_APP_NAME and self.settings.HEROKU_API_KEY:
             self.heroku_app.processes['web'].scale(dynos)
             self._num_dynos = dynos
-
+            logger.info("Scaling to %s dynos." % dynos)
         else:
             # Unhandled raise, because this should never ever be called without all the required settings.
             raise MissingParameter
@@ -75,7 +76,7 @@ class HerokuAutoscaler(object):
                 self.scale_up()
             elif self.settings.NOTIFY_IF_NEEDS_EXCEED_MAX:
                 # We're already at the max. Notify if enabled.
-                print "The notification email code is not written"
+                logger.warn("Scale up needed, and we're already at the maximum (%s) dynos." % self.settings.MAX_DYNOS)
 
         elif self.needs_scale_down:
             if self.num_dynos > self.settings.MIN_DYNOS:
@@ -83,7 +84,7 @@ class HerokuAutoscaler(object):
                 self.scale_down()
             elif self.settings.NOTIFY_IF_NEEDS_BELOW_MIN and self.num_dynos != 1:
                 # We're at the min, but could scale down further. Notify if enabled.
-                print "The notification email code is not written"
+                logger.warn("Scale down is ok, but we're already at the minimum (%s) dynos." % self.settings.MIN_DYNOS)
 
     def ping_and_store(self):
         """Pings the url, records the response time, and stores the results."""
