@@ -6,7 +6,7 @@ ROOT_DIR = os.path.dirname(__file__)
 SOURCE_DIR = os.path.join(ROOT_DIR)
 
 setup(
-    name="heroku-autoscale-web-dynos",
+    name="heroku-autoscaler",
     description="Automatic scaling of web dynos on Heroku",
     author="Steven Skoczen",
     author_email="steven.skoczen@wk.com",

@@ -1,2 +1,2 @@
 include README.md AUTHORS LICENSE
-recursive-include heroku-autoscale *
+recursive-include heroku_autoscaler *

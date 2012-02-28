@@ -186,4 +186,4 @@ Credits:
 
 This package is not written, maintained, or in any way affiliated with Heroku.  "Heroku" is copyright Heroku.
 
-Code credits for heroku-autoscale itself are in the AUTHORS file.
+Code credits for heroku-autoscaler itself are in the AUTHORS file.
