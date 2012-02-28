@@ -1,8 +1,8 @@
 import time
 import urllib2
 from nose.tools import assert_equals
-from heroku_autoscaler import TOO_LOW, JUST_RIGHT, TOO_HIGH
-from heroku_autoscaler.models import HerokuAutoscaler
+from heroku_web_autoscale import TOO_LOW, JUST_RIGHT, TOO_HIGH
+from heroku_web_autoscale.models import HerokuAutoscaler
 
 
 class TestSettings:

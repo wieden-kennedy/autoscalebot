@@ -1,7 +1,7 @@
 import time
 import heroku
 import urllib2
-from heroku_autoscaler import MissingParameter, TOO_LOW, JUST_RIGHT, TOO_HIGH
+from heroku_web_autoscale import MissingParameter, TOO_LOW, JUST_RIGHT, TOO_HIGH
 
 
 class HerokuAutoscaler(object):

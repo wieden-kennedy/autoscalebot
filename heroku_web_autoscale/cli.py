@@ -3,8 +3,8 @@ from os import curdir
 from os.path import abspath
 import sys
 
-from heroku_autoscaler.tasks import start_autoscaler
-from heroku_autoscaler import version
+from heroku_web_autoscale.tasks import start_autoscaler
+from heroku_web_autoscale import version
 
 
 def main(args=sys.argv[1:]):

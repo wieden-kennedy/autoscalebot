@@ -1,8 +1,7 @@
 *.pyc
 .DS_Store
-heroku_autoscaler.egg-info
-heroku_autoscaler.egg-info/*
-dist/*
+heroku_web_autoscale.egg-info
+heroku_web_autoscale.egg-info/*
 autoscale_settings.py
-heroku_autoscale_web_dynos.egg-info/*
+dist/*
 build/*

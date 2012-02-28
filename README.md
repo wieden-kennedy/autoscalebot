@@ -1,4 +1,4 @@
-heroku-web-autoscaler has one simple aim: to make scaling heroku web dynos something you can stop worrying about.  It also integrates nicely with django.
+heroku-web-autoscale has one simple aim: to make scaling heroku web dynos something you can stop worrying about.  It also integrates nicely with django.
 
 
 Installing
@@ -7,7 +7,7 @@ Installing
 If you're using not django:
 ---------------------------
 
-1. ```pip install heroku-web-autoscaler```, and add it to your `requirements.txt`
+1. ```pip install heroku-web-autoscale```, and add it to your `requirements.txt`
 
 2. Create a settings file somewhere in your `PYTHON_PATH`. We typically call it `autoscale_settings.py`, but you can call it whatever you like.
 3. Set these settings for your app, as well as any optional tuning settings. See autoscale_settings.py.dist for an example.
@@ -27,7 +27,7 @@ If you're using not django:
 If you are using django:
 -----------------------
 
-1. ```pip install heroku-web-autoscaler```, and add it to your `requirements.txt`
+1. ```pip install heroku-web-autoscale```, and add it to your `requirements.txt`
 
 2. Set these required settings in your `settings.py`, as well as any optional tuning settings.  Prefix all names on the settings list below with `AUTOSCALE_`
 
@@ -38,11 +38,11 @@ If you are using django:
     
     * settings.py: 
 
-        ```INSTALLED_APPS += ("heroku_autoscaler",)```
+        ```INSTALLED_APPS += ("heroku_web_autoscale",)```
 
     * urls.py: 
         ```urlpatterns += patterns('',
-               url(r'^', include('heroku_autoscaler.urls', app_name="heroku_autoscaler", namespace="heroku_autoscaler"), ),
+               url(r'^', include('heroku_web_autoscale.urls', app_name="heroku_web_autoscale", namespace="heroku_web_autoscale"), ),
             )```
 
 4. Add it to your Procfile:
@@ -193,4 +193,4 @@ Credits:
 
 This package is not written, maintained, or in any way affiliated with Heroku.  "Heroku" is copyright Heroku.
 
-Code credits for heroku-autoscaler itself are in the AUTHORS file.
+Code credits for heroku-web-autoscale itself are in the AUTHORS file.

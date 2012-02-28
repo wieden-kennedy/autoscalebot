@@ -1,17 +1,17 @@
 #/usr/bin/env python
 import os
 from setuptools import setup, find_packages
-from heroku_autoscaler import version
+from heroku_web_autoscale import version
 
 ROOT_DIR = os.path.dirname(__file__)
 SOURCE_DIR = os.path.join(ROOT_DIR)
 
 setup(
-    name="heroku-autoscaler",
+    name="heroku-web-autoscale",
     description="Automatic scaling of web dynos on Heroku",
     author="Steven Skoczen",
     author_email="steven.skoczen@wk.com",
-    url="https://github.com/wieden-kennedy/django-heroku-autoscale",
+    url="https://github.com/wieden-kennedy/heroku-web-autoscale",
     version=version,
     install_requires=["heroku"],
     packages=find_packages(),
@@ -28,6 +28,6 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
     entry_points={
-        'console_scripts': ['heroku_web_autoscaler = heroku_autoscaler.cli:main'],
+        'console_scripts': ['heroku_web_autoscaler = heroku_web_autoscale.cli:main'],
     },
 )
