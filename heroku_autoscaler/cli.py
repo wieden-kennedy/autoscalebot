@@ -1,11 +1,15 @@
-import sys
 import optparse
+from os import curdir
+from os.path import abspath
+import sys
 
-from heroku_autoscaler.tasks import start_heartbeat
+from heroku_autoscaler.tasks import start_autoscaler
 from heroku_autoscaler import version
 
 
 def main(args=sys.argv[1:]):
+    CLI_ROOT = abspath(curdir)
+    sys.path.insert(0, CLI_ROOT)
 
     parser = optparse.OptionParser(
         usage="%prog or type %prog -h (--help) for help",
@@ -23,4 +27,4 @@ def main(args=sys.argv[1:]):
     if options.settings:
         settings = __import__(options.settings)
 
-    start_heartbeat(settings=settings)
+    start_autoscaler(settings=settings)
