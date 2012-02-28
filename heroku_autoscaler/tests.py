@@ -24,11 +24,17 @@ settings.NOTIFY_IF_NEEDS_BELOW_MIN = False
 
 class MockHerokuProcesses:
     def __init__(self):
-        self.processes = [1, ]
         self.current = 0
+        self._processes = [1, ]
+
+    @property
+    def processes(self):
+        if not hasattr(self, "_processes"):
+            self._processes = [1, ]
+        return self._processes
 
     def scale(self, new_num):
-        self.processes = [n + 1 for n in range(0, new_num)]
+        self._processes = [n + 1 for n in range(0, new_num)]
 
     def __iter__(self):
         return self
@@ -42,14 +48,20 @@ class MockHerokuProcesses:
 
 
 class MockHerokuApp:
-    def __init__(self):
-        self.processes = {'web': MockHerokuProcesses(), }
+
+    @property
+    def processes(self):
+        if not hasattr(self, "_processes"):
+            self._processes = {'web': MockHerokuProcesses(), }
+        return self._processes
 
 
 class MockHerokuAutoscaler(HerokuAutoscaler):
     @property
     def heroku_app(self):
-        return MockHerokuApp()
+        if not hasattr(self, "_heroku_app"):
+            self._heroku_app = MockHerokuApp()
+        return self._heroku_app
 
 
 class MockValidResponse:
@@ -67,8 +79,8 @@ def mock_valid_urlopen(self, *args, **kwargs):
     return MockValidResponse()
 
 
-def mock_invalid_urlread(self, *args, **kwargs):
-    raise Exception
+def mock_invalid_urlopen(self, *args, **kwargs):
+    return Mock500Response()
 
 
 def mock_fast_urlopen(self, *args, **kwargs):
@@ -76,14 +88,20 @@ def mock_fast_urlopen(self, *args, **kwargs):
 
 
 def mock_slow_urlopen(self, *args, **kwargs):
-    time.sleep(1.5)
+    time.sleep(2)
     return MockValidResponse()
 
 
 class TestHerokuAutoscaler:
 
     def setUp(self):
-        self.test_scaler = MockHerokuAutoscaler()
+        self.test_scaler
+
+    @property
+    def test_scaler(self):
+        if not hasattr(self, "_test_scaler"):
+            self._test_scaler = MockHerokuAutoscaler()
+        return self._test_scaler
 
     def test_heroku_scale(self):
         assert_equals(self.test_scaler.num_dynos, 1)
@@ -94,7 +112,7 @@ class TestHerokuAutoscaler:
 
     def test_num_dynos(self):
         self.test_scaler.heroku_scale(5)
-        assert_equals(len([1 for i in self.test_scaler.heroku_app.processes['web']]), 5)
+        assert_equals(len([i for i in self.test_scaler.heroku_app.processes['web']]), 5)
 
     def test_add_to_history(self):
         self.test_scaler.add_to_history(TOO_LOW)
@@ -206,8 +224,7 @@ class TestHerokuAutoscaler:
         assert_equals(self.test_scaler.results, [JUST_RIGHT])
 
     def test_ping_and_store_for_invalid_url(self):
-        urllib2.urlopen = mock_valid_urlopen
-        urllib2.read = mock_invalid_urlread
+        urllib2.urlopen = mock_invalid_urlopen
         assert_equals(self.test_scaler.results, [])
         self.test_scaler.ping_and_store()
         assert_equals(self.test_scaler.results, [TOO_HIGH])

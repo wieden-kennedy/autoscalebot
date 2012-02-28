@@ -1,4 +1,4 @@
-import datetime
+import time
 import heroku
 import urllib2
 from heroku_autoscaler.conf import settings
@@ -87,7 +87,7 @@ class HerokuAutoscaler(object):
 
     def ping_and_store(self):
         """Pings the url, records the response time, and stores the results."""
-        start_time = datetime.datetime.now()
+        start_time = time.time()
         req = urllib2.Request(url=settings.HEARTBEAT_URL)
         errored_out = False
         response = urllib2.urlopen(req)
@@ -95,10 +95,11 @@ class HerokuAutoscaler(object):
             assert response.read(1) is not None
         except:
             errored_out = True
-        end_time = datetime.datetime.now()
+        end_time = time.time()
 
         diff = end_time - start_time
-        diff = diff.microseconds / 1000
+        print diff
+        diff = diff * 1000
 
         if diff > settings.MAX_RESPONSE_TIME_IN_MS or errored_out:
             result = TOO_HIGH
