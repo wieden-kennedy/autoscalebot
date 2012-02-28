@@ -5,9 +5,8 @@ from heroku_web_autoscale.conf import AutoscaleSettings
 from heroku_web_autoscale.models import HerokuAutoscaler
 
 
-def start_autoscaler(settings=None):
-    settings = AutoscaleSettings(settings=settings)
-    print settings.__dict__
+def start_autoscaler(settings=None, in_django=False):
+    settings = AutoscaleSettings(settings=settings, in_django=in_django)
     autoscale = HerokuAutoscaler(settings)
 
     try:

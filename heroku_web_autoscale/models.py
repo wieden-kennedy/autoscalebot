@@ -100,7 +100,7 @@ class HerokuAutoscaler(object):
 
         diff = end_time - start_time
         diff = diff * 1000
-        logger.info("Response time: %sms." % diff)
+        logger.debug("Response time: %sms." % diff)
 
         if diff > self.settings.MAX_RESPONSE_TIME_IN_MS or errored_out:
             result = TOO_HIGH
