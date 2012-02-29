@@ -199,8 +199,18 @@ class TestHerokuAutoscaler:
         self.test_scaler.add_to_history(TOO_HIGH)
         self.test_scaler.do_autoscale()
         assert_equals(self.test_scaler.num_dynos, 2)
+        self.test_scaler.add_to_history(TOO_HIGH)
+        self.test_scaler.add_to_history(TOO_HIGH)
+        self.test_scaler.add_to_history(TOO_HIGH)
+        self.test_scaler.add_to_history(TOO_HIGH)
+        self.test_scaler.add_to_history(TOO_HIGH)
         self.test_scaler.do_autoscale()
         assert_equals(self.test_scaler.num_dynos, 3)
+        self.test_scaler.add_to_history(TOO_HIGH)
+        self.test_scaler.add_to_history(TOO_HIGH)
+        self.test_scaler.add_to_history(TOO_HIGH)
+        self.test_scaler.add_to_history(TOO_HIGH)
+        self.test_scaler.add_to_history(TOO_HIGH)
         self.test_scaler.do_autoscale()
         assert_equals(self.test_scaler.num_dynos, 3)
 
@@ -215,10 +225,25 @@ class TestHerokuAutoscaler:
         self.test_scaler.add_to_history(TOO_LOW)
         self.test_scaler.add_to_history(TOO_LOW)
         assert_equals(self.test_scaler.num_dynos, 3)
+        self.test_scaler.add_to_history(TOO_LOW)
+        self.test_scaler.add_to_history(TOO_LOW)
+        self.test_scaler.add_to_history(TOO_LOW)
+        self.test_scaler.add_to_history(TOO_LOW)
+        self.test_scaler.add_to_history(TOO_LOW)
         self.test_scaler.do_autoscale()
         assert_equals(self.test_scaler.num_dynos, 2)
+        self.test_scaler.add_to_history(TOO_LOW)
+        self.test_scaler.add_to_history(TOO_LOW)
+        self.test_scaler.add_to_history(TOO_LOW)
+        self.test_scaler.add_to_history(TOO_LOW)
+        self.test_scaler.add_to_history(TOO_LOW)
         self.test_scaler.do_autoscale()
         assert_equals(self.test_scaler.num_dynos, 1)
+        self.test_scaler.add_to_history(TOO_LOW)
+        self.test_scaler.add_to_history(TOO_LOW)
+        self.test_scaler.add_to_history(TOO_LOW)
+        self.test_scaler.add_to_history(TOO_LOW)
+        self.test_scaler.add_to_history(TOO_LOW)
         self.test_scaler.do_autoscale()
         assert_equals(self.test_scaler.num_dynos, 1)
 
@@ -230,6 +255,17 @@ class TestHerokuAutoscaler:
 
     def test_custom_increments_work(self):
         assert True == "Test written"
+
+    def test_scaling_clears_the_results_queue(self):
+        assert_equals(self.test_scaler.num_dynos, 1)
+        self.test_scaler.add_to_history(TOO_HIGH)
+        self.test_scaler.add_to_history(TOO_HIGH)
+        self.test_scaler.add_to_history(TOO_HIGH)
+        self.test_scaler.add_to_history(TOO_HIGH)
+        self.test_scaler.add_to_history(TOO_HIGH)
+        self.test_scaler.do_autoscale()
+        assert_equals(self.test_scaler.num_dynos, 2)
+        assert_equals(self.test_scaler.results, [])
 
     def test_ping_and_store_for_valid_url(self):
         urllib2.urlopen = mock_valid_urlopen

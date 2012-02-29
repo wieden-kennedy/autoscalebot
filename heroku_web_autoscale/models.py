@@ -24,6 +24,7 @@ class HerokuAutoscaler(object):
             self.heroku_app.processes['web'].scale(dynos)
             self._num_dynos = dynos
             logger.info("Scaling to %s dynos." % dynos)
+            self.results = []
         else:
             # Unhandled raise, because this should never ever be called without all the required settings.
             raise MissingParameter
