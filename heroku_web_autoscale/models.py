@@ -1,5 +1,6 @@
-import time
 import heroku
+import datetime
+import time
 import urllib2
 from heroku_web_autoscale import MissingParameter, TOO_LOW, JUST_RIGHT, TOO_HIGH
 from heroku_web_autoscale.logger import logger
@@ -33,6 +34,38 @@ class HerokuAutoscaler(object):
         return len([1 for i in self.heroku_app.processes['web']])
 
     @property
+    def max_response_time(self):
+        return self.settings.MAX_RESPONSE_TIME_IN_MS
+
+    @property
+    def min_response_time(self):
+        return self.settings.MIN_RESPONSE_TIME_IN_MS
+
+    def _get_current_value_from_time_dict(self, time_dict):
+            now = datetime.datetime.now()
+            max_dynos = False
+            for start_time, max_value in time_dict.iteritems():
+                if not max_dynos or (now.hour < start_time[0]) and (now.minute < start_time[1]):
+                    max_dynos = max_value
+                else:
+                    break
+            return max_dynos
+
+    @property
+    def max_num_dynos(self):
+        if type(self.settings.MAX_DYNOS) == type({}):
+            return self._get_current_value_from_time_dict(self.settings.MAX_DYNOS)
+        else:
+            return self.settings.MAX_DYNOS
+
+    @property
+    def min_num_dynos(self):
+        if type(self.settings.MIN_DYNOS) == type({}):
+            return self._get_current_value_from_time_dict(self.settings.MIN_DYNOS)
+        else:
+            return self.settings.MIN_DYNOS
+
+    @property
     def num_dynos(self):
         if not hasattr(self, "_num_dynos"):
             self._num_dynos = self.heroku_get_num_dynos()
@@ -59,33 +92,33 @@ class HerokuAutoscaler(object):
 
     def scale_up(self):
         new_dynos = self.num_dynos + self.settings.INCREMENT
-        if new_dynos > self.settings.MAX_DYNOS:
-            new_dynos = self.settings.MAX_DYNOS
+        if new_dynos > self.max_num_dynos:
+            new_dynos = self.max_num_dynos
         self.heroku_scale(new_dynos)
 
     def scale_down(self):
         new_dynos = self.num_dynos - self.settings.INCREMENT
-        if new_dynos < self.settings.MIN_DYNOS:
-            new_dynos = self.settings.MIN_DYNOS
+        if new_dynos < self.min_num_dynos:
+            new_dynos = self.min_num_dynos
         self.heroku_scale(new_dynos)
 
     def do_autoscale(self):
         """Calls scale up and down, based on need."""
         if self.needs_scale_up:
-            if self.num_dynos < self.settings.MAX_DYNOS:
+            if self.num_dynos < self.max_num_dynos:
                 # We have room, scale up.
                 self.scale_up()
             elif self.settings.NOTIFY_IF_NEEDS_EXCEED_MAX:
-                # We're already at the max. Notify if enabled.
-                logger.warn("Scale up needed, and we're already at the maximum (%s) dynos." % self.settings.MAX_DYNOS)
+                # We're already at the min. Notify if enabled.
+                logger.warn("Scale up needed, and we'MIN already at the maximum (%s) dynos." % self.max_num_dynos)
 
         elif self.needs_scale_down:
-            if self.num_dynos > self.settings.MIN_DYNOS:
+            if self.num_dynos > self.min_num_dynos:
                 # We have room, scale down.
                 self.scale_down()
             elif self.settings.NOTIFY_IF_NEEDS_BELOW_MIN and self.num_dynos != 1:
                 # We're at the min, but could scale down further. Notify if enabled.
-                logger.warn("Scale down is ok, but we're already at the minimum (%s) dynos." % self.settings.MIN_DYNOS)
+                logger.warn("Scale down is ok, but we're already at the minimum (%s) dynos." % self.min_num_dynos)
 
     def ping_and_store(self):
         """Pings the url, records the response time, and stores the results."""
@@ -103,9 +136,9 @@ class HerokuAutoscaler(object):
         diff = diff * 1000
         logger.debug("Response time: %sms." % diff)
 
-        if diff > self.settings.MAX_RESPONSE_TIME_IN_MS or errored_out:
+        if diff > self.max_response_time or errored_out:
             result = TOO_HIGH
-        elif diff < self.settings.MIN_RESPONSE_TIME_IN_MS:
+        elif diff < self.min_response_time:
             result = TOO_LOW
         else:
             result = JUST_RIGHT
