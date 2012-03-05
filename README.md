@@ -178,6 +178,20 @@ Roadmap
 * Time-based MAX and MIN settings
 * Notifications
 
+*0.3*
+
+* Advanced scaling mode:
+    * autoscaler passes the request timestamp and the current number of dynos
+    * the app returns with JSON indicating the scaling needs:
+
+        ```json
+        {
+            'web': 'scale_up',
+            'celery': 'steady'
+        }
+        ```
+
+
 
 
 Recent updates (full log in CHANGES)
