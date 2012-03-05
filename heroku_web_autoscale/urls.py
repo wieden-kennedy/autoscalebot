@@ -1,8 +1,6 @@
-from django.conf.urls.defaults import *
+from django.conf.urls.defaults import patterns, url
 from heroku_web_autoscale import views
 
-url = parser.url
-
-urlpatterns = parser.patterns('',
+urlpatterns = patterns('',
     url(r'heartbeat', views.heartbeat, name='heartbeat'),
 )
