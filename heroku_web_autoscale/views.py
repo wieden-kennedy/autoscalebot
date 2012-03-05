@@ -19,7 +19,7 @@ def heartbeat(request):
     t = tempfile.TemporaryFile()
     t.write("%s %s" % (rand_number, cached_val))
     t.flush()
-    t.seek(1)
+    t.seek(0)
     assert "%s %s" % (rand_number, cached_val) == t.read()
 
     # Respond
