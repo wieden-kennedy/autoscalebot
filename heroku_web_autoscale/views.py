@@ -21,6 +21,7 @@ def heartbeat(request):
     t.flush()
     t.seek(0)
     assert "%s %s" % (rand_number, cached_val) == t.read()
+    t.close()
 
     # Respond
     return HttpResponse("Beat", content_type="text/plain")
