@@ -123,9 +123,8 @@ class HerokuAutoscaler(object):
     def ping_and_store(self):
         """Pings the url, records the response time, and stores the results."""
         start_time = time.time()
-        req = urllib2.Request(url=self.settings.HEARTBEAT_URL)
         errored_out = False
-        response = urllib2.urlopen(req)
+        response = urllib2.urlopen(self.settings.HEARTBEAT_URL, None, self.max_response_time)
         try:
             assert response.read(1) is not None
         except:
