@@ -80,7 +80,7 @@ Heroku-autoscale has a bunch of settings, so you should be able to tune it for m
 
 * `HEARTBEAT_URL` 
 
-    * the url autoscale should hit, and expect a response in a given time. Defaults to `/heroku-autoscale/heartbeat/v1`
+    * the url autoscale should hit, and expect a response in a given time. Defaults to `/heroku-autoscale/heartbeat/`
 
 * `MAX_RESPONSE_TIME_IN_MS` 
 
