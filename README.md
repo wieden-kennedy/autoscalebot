@@ -214,6 +214,8 @@ Roadmap
         ```
 
 * Time-based notification thresholds
+* Setting to have a minimum cool-off time between scales
+
 
 
 

@@ -521,5 +521,4 @@ class TestHerokuAutoscaler:
         assert_equals([len(b.messages) for b in self.test_scaler.backends], [1, 1])
 
 
-# TODO:
-    # django tests
+# TODO: django tests
