@@ -34,7 +34,7 @@ If you are using django:
     * `AUTOSCALE_HEROKU_APP_NAME`
     * `AUTOSCALE_HEROKU_API_KEY`
 
-3. If you want the built-in test view (v0.2):
+3. If you want the built-in test view:
     
     * settings.py: 
 
@@ -100,7 +100,7 @@ Heroku-autoscale has a bunch of settings, so you should be able to tune it for m
 
 * `MAX_DYNOS` 
 
-    * the absolute maximum number of dynos. Default to `3`. This value is either an integer, or (v0.2) a dictionary of time/max pairs.  E.g.
+    * the absolute maximum number of dynos. Default to `3`. This value is either an integer, or a dictionary of time/max pairs.  E.g.
 
         ```python
         # sets the absolute max as 5 dynos
@@ -119,7 +119,7 @@ Heroku-autoscale has a bunch of settings, so you should be able to tune it for m
 
 * `MIN_DYNOS` 
 
-    * the absolute minimum number of dynos. Default to `1`. This value is either an integer, or (v0.2) a dictionary of time/max pairs. E.g.
+    * the absolute minimum number of dynos. Default to `1`. This value is either an integer, or a dictionary of time/max pairs. E.g.
 
         ```python
         # sets the absolute min as 2 dynos
@@ -140,25 +140,25 @@ Heroku-autoscale has a bunch of settings, so you should be able to tune it for m
     * A list of backends to call for all notify requests. Defaults to `[]`
 
 * `NOTIFY_IF_SCALE_DIFF_EXCEEDS_THRESHOLD` 
-    * (v0.2) Paired with the setting below, this setting will call the NOTIFICATION_BACKENDS if the scale differential in the given time period exceeds the threshold.  For example, if I see a scale of more than 10 dynos within 30 minutes, something intesting is happening with the site.  I'd probably like to know.  Defaults to `None`, and is disabled.
+    * (v0.3) Paired with the setting below, this setting will call the NOTIFICATION_BACKENDS if the scale differential in the given time period exceeds the threshold.  For example, if I see a scale of more than 10 dynos within 30 minutes, something intesting is happening with the site.  I'd probably like to know.  Defaults to `None`, and is disabled.
 
 * `NOTIFY_IF_SCALE_DIFF_EXCEEDS_PERIOD_IN_MINUTES` 
-    * (v0.2) The time period to count differentials over. Defaults to `None`.
+    * (v0.3) The time period to count differentials over. Defaults to `None`.
 
 * `NOTIFY_IF_NEEDS_EXCEED_MAX`
-    * (v0.2) Call the NOTIFICATION_BACKENDS when the app is at `MAX_DYNOS`, and the reponses are too slow. This likely means that `MAX_DYNOS` is too low, but django-heroku-autoscale won't scale it up without your explicit instructions. Defaults to `True`.
+    * Call the NOTIFICATION_BACKENDS when the app is at `MAX_DYNOS`, and the reponses are too slow. This likely means that `MAX_DYNOS` is too low, but django-heroku-autoscale won't scale it up without your explicit instructions. Defaults to `True`.
 
 * `NOTIFY_IF_NEEDS_BELOW_MIN`
-    * (v0.2) Call the NOTIFICATION_BACKENDS when the app is at `MIN_DYNOS`, and the reponses are below the scale down minimum (but above one).  Useful for learning if you have `MIN_DYNOS` set too low. Defaults to `False`.
+    * Call the NOTIFICATION_BACKENDS when the app is at `MIN_DYNOS`, and the reponses are below the scale down minimum (but above one).  Useful for learning if you have `MIN_DYNOS` set too low. Defaults to `False`.
 
 * `NOTIFY_ON_SCALE_FAILS`
-    * (v0.2) Call the NOTIFICATION_BACKENDS if a call to the scaling API fails for any reason. Note that a scale fail doesn't hurt anything, and scaling will be attempted again in the next heartbeat. Defaults to `False`.
+    * Call the NOTIFICATION_BACKENDS if a call to the scaling API fails for any reason. Note that a scale fail doesn't hurt anything, and scaling will be attempted again in the next heartbeat. Defaults to `False`.
 
 * `NOTIFY_ON_EVERY_SCALE`
-    * (v0.2) Call the NOTIFICATION_BACKENDS on every scale. Defaults to `False`.
+    * Call the NOTIFICATION_BACKENDS on every scale. Defaults to `False`.
 
 * `NOTIFY_ON_EVERY_PING`
-    * (v0.2) Call the NOTIFICATION_BACKENDS on every ping. Defaults to `False`.
+    * Call the NOTIFICATION_BACKENDS on every ping. Defaults to `False`.
 
 
 Notification
@@ -213,6 +213,7 @@ Roadmap
         }
         ```
 
+* Time-based notification thresholds
 
 
 
