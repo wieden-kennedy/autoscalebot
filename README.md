@@ -200,12 +200,6 @@ The problem, of course, is that once Heroku kills your dyno, the new one has to 
 Roadmap 
 ------------------------------------
 
-*0.2*
-
-* Better django integration (test url and view)
-* Time-based MAX and MIN settings
-* Notifications via NOTIFICATION_BACKENDS
-
 *0.3*
 
 * Advanced scaling mode:
@@ -224,6 +218,14 @@ Roadmap
 
 Recent updates (full log in CHANGES)
 ------------------------------------
+
+
+*0.2*
+
+* Better django integration includes a heartbeat url and view
+* Time-based MAX and MIN settings
+* Notifications via NOTIFICATION_BACKENDS
+
 
 *0.1*
 
