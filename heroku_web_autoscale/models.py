@@ -12,6 +12,24 @@ class HerokuAutoscaler(object):
         super(HerokuAutoscaler, self).__init__(*args, **kwargs)
         self.settings = settings
         self.results = []  # List of TOO_LOW, JUST_RIGHT, and TOO_HIGHS
+        self.backends = []
+
+        if settings.NOTIFICATION_BACKENDS:
+            for b in settings.NOTIFICATION_BACKENDS:
+                # Split up the backend and its module
+                module_name = b[:b.rfind(".")]
+                class_name = b[b.rfind(".") + 1:]
+                # Import the module
+                m = __import__(module_name, globals(), locals(), [class_name, ])
+                # Instantiate the class, passing this autoscaler
+                c = getattr(m, class_name)(self)
+                # Add it to the list of backends
+                self.backends.append(c)
+
+    def notification(self, fn, *args, **kwargs):
+        for b in self.backends:
+            f = getattr(b, fn)
+            f(*args, **kwargs)
 
     @property
     def heroku_app(self):
@@ -21,14 +39,21 @@ class HerokuAutoscaler(object):
         return self._heroku_app
 
     def heroku_scale(self, dynos=None):
-        if dynos and self.settings.HEROKU_APP_NAME and self.settings.HEROKU_API_KEY:
-            self.heroku_app.processes['web'].scale(dynos)
-            self._num_dynos = dynos
-            logger.info("Scaling to %s dynos." % dynos)
-            self.results = []
-        else:
-            # Unhandled raise, because this should never ever be called without all the required settings.
-            raise MissingParameter
+        try:
+            if dynos and self.settings.HEROKU_APP_NAME and self.settings.HEROKU_API_KEY:
+                if dynos < self.min_num_dynos:
+                    dynos = self.min_num_dynos
+                if dynos > self.max_num_dynos:
+                    dynos = self.max_num_dynos
+                self.heroku_app.processes['web'].scale(dynos)
+                self._num_dynos = dynos
+                self.notification("notify_scaled")
+                self.results = []
+            else:
+                # Unhandled raise, because this should never ever be called without all the required settings.
+                raise MissingParameter
+        except:
+            self.notification("notify_scale_failed")
 
     def heroku_get_num_dynos(self):
         return len([1 for i in self.heroku_app.processes['web']])
@@ -40,6 +65,14 @@ class HerokuAutoscaler(object):
     @property
     def min_response_time(self):
         return self.settings.MIN_RESPONSE_TIME_IN_MS
+
+    @property
+    def max_response_time_in_seconds(self):
+        return self.settings.MAX_RESPONSE_TIME_IN_MS / 1000
+
+    @property
+    def min_response_time_in_seconds(self):
+        return self.settings.MIN_RESPONSE_TIME_IN_MS / 1000
 
     def _get_current_value_from_time_dict(self, time_dict):
             now = datetime.datetime.now()
@@ -83,23 +116,23 @@ class HerokuAutoscaler(object):
                 self.results = self.results[-1 * self.settings.NUMBER_OF_PASSES_TO_SCALE_DOWN_AFTER:]
 
     @property
+    def outside_bounds(self):
+        return self.num_dynos < self.min_num_dynos or self.num_dynos > self.max_num_dynos
+
+    @property
     def needs_scale_up(self):
-        return len(self.results) >= self.settings.NUMBER_OF_FAILS_TO_SCALE_UP_AFTER and all([h == TOO_HIGH for h in self.results])
+        return len(self.results) >= self.settings.NUMBER_OF_FAILS_TO_SCALE_UP_AFTER and all([h == TOO_HIGH for h in self.results]) or self.outside_bounds
 
     @property
     def needs_scale_down(self):
-        return len(self.results) >= self.settings.NUMBER_OF_PASSES_TO_SCALE_DOWN_AFTER and all([h == TOO_LOW for h in self.results])
+        return len(self.results) >= self.settings.NUMBER_OF_PASSES_TO_SCALE_DOWN_AFTER and all([h == TOO_LOW for h in self.results]) or self.outside_bounds
 
     def scale_up(self):
         new_dynos = self.num_dynos + self.settings.INCREMENT
-        if new_dynos > self.max_num_dynos:
-            new_dynos = self.max_num_dynos
         self.heroku_scale(new_dynos)
 
     def scale_down(self):
         new_dynos = self.num_dynos - self.settings.INCREMENT
-        if new_dynos < self.min_num_dynos:
-            new_dynos = self.min_num_dynos
         self.heroku_scale(new_dynos)
 
     def do_autoscale(self):
@@ -110,24 +143,25 @@ class HerokuAutoscaler(object):
                 self.scale_up()
             elif self.settings.NOTIFY_IF_NEEDS_EXCEED_MAX:
                 # We're already at the min. Notify if enabled.
-                logger.warn("Scale up needed, and we'MIN already at the maximum (%s) dynos." % self.max_num_dynos)
+                self.notification("notify_needs_above_max")
 
         elif self.needs_scale_down:
             if self.num_dynos > self.min_num_dynos:
                 # We have room, scale down.
                 self.scale_down()
-            elif self.settings.NOTIFY_IF_NEEDS_BELOW_MIN and self.num_dynos != 1:
+            elif self.settings.NOTIFY_IF_NEEDS_BELOW_MIN and self.num_dynos > 1:
                 # We're at the min, but could scale down further. Notify if enabled.
-                logger.warn("Scale down is ok, but we're already at the minimum (%s) dynos." % self.min_num_dynos)
+                self.notification("notify_needs_below_min")
 
     def ping_and_store(self):
         """Pings the url, records the response time, and stores the results."""
         start_time = time.time()
         errored_out = False
-        response = urllib2.urlopen(self.settings.HEARTBEAT_URL, None, self.max_response_time)
+
         try:
+            response = urllib2.urlopen(self.settings.HEARTBEAT_URL, None, self.max_response_time_in_seconds)
             assert response.read(1) is not None
-        except:
+        except:  # probably URLError, but anything counts.
             errored_out = True
         end_time = time.time()
 

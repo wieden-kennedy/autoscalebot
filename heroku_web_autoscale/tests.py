@@ -1,6 +1,8 @@
+from copy import copy
 import time
 import urllib2
 from nose.tools import assert_equals
+from nose.plugins.skip import SkipTest
 from heroku_web_autoscale import TOO_LOW, JUST_RIGHT, TOO_HIGH
 from heroku_web_autoscale.models import HerokuAutoscaler
 
@@ -24,7 +26,8 @@ test_settings.INCREMENT = 1
 test_settings.NOTIFY_IF_SCALE_DIFF_EXCEEDS_THRESHOLD = None
 test_settings.NOTIFY_IF_SCALE_DIFF_EXCEEDS_PERIOD_IN_MINUTES = None
 test_settings.NOTIFY_IF_NEEDS_EXCEED_MAX = True
-test_settings.NOTIFY_IF_NEEDS_BELOW_MIN = False
+test_settings.NOTIFY_IF_NEEDS_BELOW_MIN = True
+test_settings.NOTIFICATION_BACKENDS = ["heroku_web_autoscale.backends.notification.TestBackend", ]
 
 
 class MockHerokuProcesses:
@@ -54,6 +57,9 @@ class MockHerokuProcesses:
 
 class MockHerokuApp:
 
+    def __init__(self, *args, **kwargs):
+        self.processes
+
     @property
     def processes(self):
         if not hasattr(self, "_processes"):
@@ -62,6 +68,11 @@ class MockHerokuApp:
 
 
 class MockHerokuAutoscaler(HerokuAutoscaler):
+
+    def __init__(self, *args, **kwargs):
+        super(MockHerokuAutoscaler, self).__init__(*args, **kwargs)
+        self.heroku_app
+
     @property
     def heroku_app(self):
         if not hasattr(self, "_heroku_app"):
@@ -110,14 +121,16 @@ class TestHerokuAutoscaler:
 
     def test_heroku_scale(self):
         assert_equals(self.test_scaler.num_dynos, 1)
+        self.test_scaler.heroku_scale(3)
+        assert_equals(self.test_scaler.num_dynos, 3)
         self.test_scaler.heroku_scale(5)
-        assert_equals(self.test_scaler.num_dynos, 5)
+        assert_equals(self.test_scaler.num_dynos, 3)
         self.test_scaler.heroku_scale(2)
         assert_equals(self.test_scaler.num_dynos, 2)
 
     def test_num_dynos(self):
-        self.test_scaler.heroku_scale(5)
-        assert_equals(len([i for i in self.test_scaler.heroku_app.processes['web']]), 5)
+        self.test_scaler.heroku_scale(3)
+        assert_equals(len([i for i in self.test_scaler.heroku_app.processes['web']]), 3)
 
     def test_add_to_history(self):
         self.test_scaler.add_to_history(TOO_LOW)
@@ -254,7 +267,36 @@ class TestHerokuAutoscaler:
         assert True == "Test written"
 
     def test_custom_increments_work(self):
-        assert True == "Test written"
+        one_off_test_settings = copy(test_settings)
+        one_off_test_settings.INCREMENT = 2
+        self._test_scaler = MockHerokuAutoscaler(one_off_test_settings)
+        assert_equals(self.test_scaler.num_dynos, 1)
+        self.test_scaler.add_to_history(TOO_HIGH)
+        self.test_scaler.add_to_history(TOO_HIGH)
+        self.test_scaler.add_to_history(TOO_HIGH)
+        self.test_scaler.add_to_history(TOO_HIGH)
+        self.test_scaler.add_to_history(TOO_HIGH)
+        self.test_scaler.do_autoscale()
+        assert_equals(self.test_scaler.num_dynos, 3)
+
+    def test_if_min_is_changed_to_higher_than_current_scaling_works(self):
+        self.test_scaler.heroku_scale(1)
+        one_off_test_settings = copy(test_settings)
+        one_off_test_settings.MIN_DYNOS = 2
+        self._test_scaler = MockHerokuAutoscaler(one_off_test_settings)
+        assert_equals(self.test_scaler.num_dynos, 1)
+        self.test_scaler.do_autoscale()
+        assert_equals(self.test_scaler.num_dynos, 2)
+
+    def test_if_max_is_changed_to_lower_than_current_scaling_works(self):
+        self.test_scaler.heroku_scale(2)
+        one_off_test_settings = copy(test_settings)
+        one_off_test_settings.MAX_DYNOS = 0
+        one_off_test_settings.MIN_DYNOS = 0
+        self._test_scaler = MockHerokuAutoscaler(one_off_test_settings)
+        assert_equals(self.test_scaler.num_dynos, 1)
+        self.test_scaler.do_autoscale()
+        assert_equals(self.test_scaler.num_dynos, 0)
 
     def test_scaling_clears_the_results_queue(self):
         assert_equals(self.test_scaler.num_dynos, 1)
@@ -292,19 +334,120 @@ class TestHerokuAutoscaler:
         assert_equals(self.test_scaler.results, [TOO_LOW])
 
     def test_notify_if_scale_diff_exceeds_threshold_works(self):
-        assert True == "Test written"
+        assert_equals(self.test_scaler.num_dynos, 1)
+        self.test_scaler.scale_up()
+        self.test_scaler.scale_up()
+        self.test_scaler.scale_up()
+        self.test_scaler.scale_up()
+        assert_equals(self.test_scaler.num_dynos, 3)
+        print "Feature not written"
+        raise SkipTest
 
     def test_notify_if_scale_diff_exceeds_period_in_minutes_works(self):
-        assert True == "Test written"
+        print "Feature not written"
+        raise SkipTest
 
     def test_notify_if_needs_exceed_max_works(self):
-        assert True == "Test written"
+        assert_equals(len(self.test_scaler.backends[0].messages), 0)
+        self.test_scaler.scale_up()
+        self.test_scaler.scale_up()
+        self.test_scaler.scale_up()
+        self.test_scaler.scale_up()
+        self.test_scaler.add_to_history(TOO_HIGH)
+        self.test_scaler.add_to_history(TOO_HIGH)
+        self.test_scaler.add_to_history(TOO_HIGH)
+        self.test_scaler.add_to_history(TOO_HIGH)
+        self.test_scaler.add_to_history(TOO_HIGH)
+        self.test_scaler.backends[0].clear_messages()
+        assert_equals(len(self.test_scaler.backends[0].messages), 0)
+        self.test_scaler.do_autoscale()
+        assert_equals(len(self.test_scaler.backends[0].messages), 1)
+        assert "max" in self.test_scaler.backends[0].messages[0]
+
+    def test_notify_if_needs_below_min_does_not_notify_on_one_dyno_works(self):
+        assert_equals(len(self.test_scaler.backends[0].messages), 0)
+        self.test_scaler.add_to_history(TOO_LOW)
+        self.test_scaler.add_to_history(TOO_LOW)
+        self.test_scaler.add_to_history(TOO_LOW)
+        self.test_scaler.add_to_history(TOO_LOW)
+        self.test_scaler.add_to_history(TOO_LOW)
+        self.test_scaler.add_to_history(TOO_LOW)
+        self.test_scaler.backends[0].clear_messages()
+        assert_equals(len(self.test_scaler.backends[0].messages), 0)
+        self.test_scaler.do_autoscale()
+        assert_equals(len(self.test_scaler.backends[0].messages), 0)
 
     def test_notify_if_needs_below_min_works(self):
-        assert True == "Test written"
+        one_off_test_settings = copy(test_settings)
+        one_off_test_settings.MIN_DYNOS = 2
+        self._test_scaler = MockHerokuAutoscaler(one_off_test_settings)
+        assert_equals(len(self.test_scaler.backends[0].messages), 0)
+        self.test_scaler.do_autoscale()
+        self.test_scaler.add_to_history(TOO_LOW)
+        self.test_scaler.add_to_history(TOO_LOW)
+        self.test_scaler.add_to_history(TOO_LOW)
+        self.test_scaler.add_to_history(TOO_LOW)
+        self.test_scaler.add_to_history(TOO_LOW)
+        self.test_scaler.add_to_history(TOO_LOW)
+        self.test_scaler.backends[0].clear_messages()
+        assert_equals(len(self.test_scaler.backends[0].messages), 0)
+        self.test_scaler.do_autoscale()
+        assert_equals(len(self.test_scaler.backends[0].messages), 1)
+        assert "min" in self.test_scaler.backends[0].messages[0]
+
+    def test_notify_if_needs_exceed_max_disabled_works(self):
+        one_off_test_settings = copy(test_settings)
+        one_off_test_settings.NOTIFY_IF_NEEDS_EXCEED_MAX = False
+        self._test_scaler = MockHerokuAutoscaler(one_off_test_settings)
+        assert_equals(len(self.test_scaler.backends[0].messages), 0)
+        self.test_scaler.scale_up()
+        self.test_scaler.scale_up()
+        self.test_scaler.scale_up()
+        self.test_scaler.scale_up()
+        self.test_scaler.add_to_history(TOO_HIGH)
+        self.test_scaler.add_to_history(TOO_HIGH)
+        self.test_scaler.add_to_history(TOO_HIGH)
+        self.test_scaler.add_to_history(TOO_HIGH)
+        self.test_scaler.add_to_history(TOO_HIGH)
+        self.test_scaler.backends[0].clear_messages()
+        assert_equals(len(self.test_scaler.backends[0].messages), 0)
+        self.test_scaler.do_autoscale()
+        assert_equals(len(self.test_scaler.backends[0].messages), 0)
+
+    def test_notify_if_needs_below_min_disabled_works(self):
+        one_off_test_settings = copy(test_settings)
+        one_off_test_settings.NOTIFY_IF_NEEDS_BELOW_MIN = False
+        assert_equals(len(self.test_scaler.backends[0].messages), 0)
+        self.test_scaler.add_to_history(TOO_LOW)
+        self.test_scaler.add_to_history(TOO_LOW)
+        self.test_scaler.add_to_history(TOO_LOW)
+        self.test_scaler.add_to_history(TOO_LOW)
+        self.test_scaler.add_to_history(TOO_LOW)
+        self.test_scaler.add_to_history(TOO_LOW)
+        self.test_scaler.backends[0].clear_messages()
+        assert_equals(len(self.test_scaler.backends[0].messages), 0)
+        self.test_scaler.do_autoscale()
+        assert_equals(len(self.test_scaler.backends[0].messages), 0)
 
     def test_notify_on_scale_fails_works(self):
         assert True == "Test written"
+
+    def test_notify_on_every_scale_works(self):
+        assert_equals(len(self.test_scaler.backends[0].messages), 0)
+        self.test_scaler.scale_up()
+        assert_equals(len(self.test_scaler.backends[0].messages), 1)
+
+    def test_all_backends_are_called_on_notification(self):
+        one_off_test_settings = copy(test_settings)
+        one_off_test_settings.NOTIFICATION_BACKENDS = [
+                                                "heroku_web_autoscale.backends.notification.TestBackend",
+                                                "heroku_web_autoscale.backends.notification.TestBackend"
+                                              ]
+        self._test_scaler = MockHerokuAutoscaler(one_off_test_settings)
+        assert_equals([len(b.messages) for b in self.test_scaler.backends], [0, 0])
+        self.test_scaler.scale_up()
+        assert_equals([len(b.messages) for b in self.test_scaler.backends], [1, 1])
+
 
 # TODO:
     # django tests

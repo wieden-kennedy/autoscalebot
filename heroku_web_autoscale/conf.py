@@ -1,22 +1,38 @@
 class AutoscaleSettings:
-    def __init__(self, settings=None, in_django=False):
-        prefix = ""
-        if in_django:
-            prefix = "AUTOSCALE_"
 
-        self.HEROKU_APP_NAME = getattr(settings, "%sHEROKU_APP_NAME" % prefix, None)
-        self.HEROKU_API_KEY = getattr(settings, "%sHEROKU_API_KEY" % prefix, None)
-        self.HEARTBEAT_INTERVAL_IN_SECONDS = getattr(settings, "%sHEARTBEAT_INTERVAL_IN_SECONDS" % prefix, 30)
-        self.HEARTBEAT_URL = getattr(settings, "%sHEARTBEAT_URL" % prefix, "/heroku-autoscale/heartbeat/v1")
-        self.MAX_RESPONSE_TIME_IN_MS = getattr(settings, "%sMAX_RESPONSE_TIME_IN_MS" % prefix, 1000)
-        self.MIN_RESPONSE_TIME_IN_MS = getattr(settings, "%sMIN_RESPONSE_TIME_IN_MS" % prefix, 200)
-        self.NUMBER_OF_FAILS_TO_SCALE_UP_AFTER = getattr(settings, "%sNUMBER_OF_FAILS_TO_SCALE_UP_AFTER" % prefix, 3)
-        self.NUMBER_OF_PASSES_TO_SCALE_DOWN_AFTER = getattr(settings, "%sNUMBER_OF_PASSES_TO_SCALE_DOWN_AFTER" % prefix, 5)
-        self.MAX_DYNOS = getattr(settings, "%sMAX_DYNOS" % prefix, 3)
-        self.MIN_DYNOS = getattr(settings, "%sMIN_DYNOS" % prefix, 1)
-        self.INCREMENT = getattr(settings, "%sINCREMENT" % prefix, 1)
-        self.NOTIFY_IF_SCALE_DIFF_EXCEEDS_THRESHOLD = getattr(settings, "%sNOTIFY_IF_SCALE_DIFF_EXCEEDS_THRESHOLD" % prefix, None)
-        self.NOTIFY_IF_SCALE_DIFF_EXCEEDS_PERIOD_IN_MINUTES = getattr(settings, "%sNOTIFY_IF_SCALE_DIFF_EXCEEDS_PERIOD_IN_MINUTES" % prefix, None)
-        self.NOTIFY_IF_NEEDS_EXCEED_MAX = getattr(settings, "%sNOTIFY_IF_NEEDS_EXCEED_MAX" % prefix, True)
-        self.NOTIFY_IF_NEEDS_BELOW_MIN = getattr(settings, "%sNOTIFY_IF_NEEDS_BELOW_MIN" % prefix, False)
-        self.NOTIFY_ON_SCALE_FAILS = getattr(settings, "%sNOTIFY_ON_SCALE_FAILS" % prefix, False)
+    def _set_attr_from_settings(self, key_name, default=None):
+        setattr(self, key_name, getattr(self.settings, "%s%s" % (key_name, self.prefix), default))
+
+    def initialize_settings(self):
+        for k, v in self.SETTINGS_AND_DEFAULTS.iteritems():
+            self._set_attr_from_settings(k, v)
+
+    def __init__(self, settings=None, in_django=False):
+        self.in_django = in_django
+        self.prefix = ""
+        if self.in_django:
+            self.prefix = "AUTOSCALE_"
+        self.settings = settings
+
+        self.SETTINGS_AND_DEFAULTS = {
+            "HEROKU_APP_NAME": None,
+            "HEROKU_API_KEY": None,
+            "HEARTBEAT_INTERVAL_IN_SECONDS": 30,
+            "HEARTBEAT_URL": "/heroku-autoscale/heartbeat/:1",
+            "MAX_RESPONSE_TIME_IN_MS": 1000,
+            "MIN_RESPONSE_TIME_IN_MS": 200,
+            "NUMBER_OF_FAILS_TO_SCALE_UP_AFTER": 3,
+            "NUMBER_OF_PASSES_TO_SCALE_DOWN_AFTER": 5,
+            "MAX_DYNOS": 3,
+            "MIN_DYNOS": 1,
+            "INCREMENT": 1,
+            "NOTIFY_IF_SCALE_DIFF_EXCEEDS_THRESHOLD": None,
+            "NOTIFY_IF_SCALE_DIFF_EXCEEDS_PERIOD_IN_MINUTES": None,
+            "NOTIFY_IF_NEEDS_EXCEED_MAX": True,
+            "NOTIFY_IF_NEEDS_BELOW_MIN": False,
+            "NOTIFY_ON_SCALE_FAILS": False,
+            "NOTIFY_ON_SCALE_FAILS": False,
+            "NOTIFICATION_BACKENDS": [],
+        }
+
+        self.initialize_settings()
