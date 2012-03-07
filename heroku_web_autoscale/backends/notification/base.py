@@ -46,3 +46,10 @@ class NotificationBackend(object):
         msg = "Scaled to (%s) dynos." % self.autoscaler.num_dynos
         self.send_notification(message=msg)
         return msg
+
+    def ping_complete(self, time, result, *args, **kwargs):
+        """Display the results of a ping"""
+
+        msg = "Ping: %sms, %s" % (time, result)
+        # self.send_notification(message=msg)
+        return msg
