@@ -1,1 +1,27 @@
-[{"pk": 1, "model": "heroku_web_autoscale.heartbeattestdata", "fields": {"number": 1}}, {"pk": 2, "model": "heroku_web_autoscale.heartbeattestdata", "fields": {"number": 1}}, {"pk": 3, "model": "heroku_web_autoscale.heartbeattestdata", "fields": {"number": 1}}, {"pk": 4, "model": "heroku_web_autoscale.heartbeattestdata", "fields": {"number": 1}}, {"pk": 5, "model": "heroku_web_autoscale.heartbeattestdata", "fields": {"number": 1}}]
+[
+    {"pk":1,
+     "model":"heroku_web_autoscale.heartbeattestdata",
+     "fields":
+        {"number":1}
+    },
+    {"pk":2,
+     "model":"heroku_web_autoscale.heartbeattestdata",
+     "fields":
+        {"number":1}
+    },
+    {"pk":3,
+     "model":"heroku_web_autoscale.heartbeattestdata",
+     "fields":
+        {"number":1}
+    },
+    {"pk":4,
+     "model":"heroku_web_autoscale.heartbeattestdata",
+     "fields":
+        {"number":1}
+    },
+    {"pk":5,
+     "model":"heroku_web_autoscale.heartbeattestdata",
+     "fields":
+        {"number":1}
+    }
+]
