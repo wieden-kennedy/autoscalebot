@@ -429,6 +429,9 @@ class TestHerokuAutoscaler:
         self.test_scaler.do_autoscale()
         assert_equals(len(self.test_scaler.backends[0].messages), 0)
 
+    def test_a_mixed_stack_of_low_high_scales_to_the_min_needed_for_the_condition(self):
+        assert True == "Test written"
+
     def test_notify_on_scale_fails_works(self):
         assert True == "Test written"
 

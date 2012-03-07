@@ -1,7 +1,7 @@
 class AutoscaleSettings:
 
     def _set_attr_from_settings(self, key_name, default=None):
-        setattr(self, key_name, getattr(self.settings, "%s%s" % (key_name, self.prefix), default))
+        setattr(self, key_name, getattr(self.settings, "%s%s" % (self.prefix, key_name), default))
 
     def initialize_settings(self):
         for k, v in self.SETTINGS_AND_DEFAULTS.iteritems():
@@ -31,7 +31,6 @@ class AutoscaleSettings:
             "NOTIFY_IF_NEEDS_EXCEED_MAX": True,
             "NOTIFY_IF_NEEDS_BELOW_MIN": False,
             "NOTIFY_ON_EVERY_PING": False,
-            "NOTIFY_ON_SCALE_FAILS": False,
             "NOTIFY_ON_SCALE_FAILS": False,
             "NOTIFICATION_BACKENDS": [],
         }

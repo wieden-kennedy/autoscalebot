@@ -121,11 +121,11 @@ class HerokuAutoscaler(object):
 
     @property
     def needs_scale_up(self):
-        return len(self.results) >= self.settings.NUMBER_OF_FAILS_TO_SCALE_UP_AFTER and all([h == TOO_HIGH for h in self.results]) or self.outside_bounds
+        return (len(self.results) >= self.settings.NUMBER_OF_FAILS_TO_SCALE_UP_AFTER and all([h == TOO_HIGH for h in self.results[-1 * self.settings.NUMBER_OF_FAILS_TO_SCALE_UP_AFTER:]])) or self.outside_bounds
 
     @property
     def needs_scale_down(self):
-        return len(self.results) >= self.settings.NUMBER_OF_PASSES_TO_SCALE_DOWN_AFTER and all([h == TOO_LOW for h in self.results]) or self.outside_bounds
+        return (len(self.results) >= self.settings.NUMBER_OF_PASSES_TO_SCALE_DOWN_AFTER and all([h == TOO_LOW for h in self.results[-1 * self.settings.NUMBER_OF_PASSES_TO_SCALE_DOWN_AFTER:]])) or self.outside_bounds
 
     def scale_up(self):
         new_dynos = self.num_dynos + self.settings.INCREMENT
@@ -180,9 +180,12 @@ class HerokuAutoscaler(object):
         if self.settings.NOTIFY_ON_EVERY_PING:
             self.notification("ping_complete", diff, result)
 
+        return diff
+
     def full_heartbeat(self):
-        self.ping_and_store()
+        heartbeat_time = self.ping_and_store()
         self.do_autoscale()
+        return heartbeat_time
 
 try:
     from django.db import models
