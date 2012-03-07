@@ -157,6 +157,9 @@ Heroku-autoscale has a bunch of settings, so you should be able to tune it for m
 * `NOTIFY_ON_EVERY_SCALE`
     * (v0.2) Call the NOTIFICATION_BACKENDS on every scale. Defaults to `False`.
 
+* `NOTIFY_ON_EVERY_PING`
+    * (v0.2) Call the NOTIFICATION_BACKENDS on every ping. Defaults to `False`.
+
 
 Notification
 ------------

@@ -177,7 +177,8 @@ class HerokuAutoscaler(object):
             result = JUST_RIGHT
 
         self.add_to_history(result)
-        self.notification("ping_complete", diff, result)
+        if self.settings.NOTIFY_ON_EVERY_PING:
+            self.notification("ping_complete", diff, result)
 
     def full_heartbeat(self):
         self.ping_and_store()

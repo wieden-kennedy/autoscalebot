@@ -30,6 +30,7 @@ class AutoscaleSettings:
             "NOTIFY_IF_SCALE_DIFF_EXCEEDS_PERIOD_IN_MINUTES": None,
             "NOTIFY_IF_NEEDS_EXCEED_MAX": True,
             "NOTIFY_IF_NEEDS_BELOW_MIN": False,
+            "NOTIFY_ON_EVERY_PING": False,
             "NOTIFY_ON_SCALE_FAILS": False,
             "NOTIFY_ON_SCALE_FAILS": False,
             "NOTIFICATION_BACKENDS": [],
