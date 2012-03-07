@@ -41,10 +41,10 @@ class HerokuAutoscaler(object):
     def heroku_scale(self, dynos=None):
         try:
             if dynos and self.settings.HEROKU_APP_NAME and self.settings.HEROKU_API_KEY:
-                if dynos < self.min_num_dynos:
-                    dynos = self.min_num_dynos
-                if dynos > self.max_num_dynos:
-                    dynos = self.max_num_dynos
+                if dynos < self.min_num_dynos():
+                    dynos = self.min_num_dynos()
+                if dynos > self.max_num_dynos():
+                    dynos = self.max_num_dynos()
                 self.heroku_app.processes['web'].scale(dynos)
                 self._num_dynos = dynos
                 self.notification("notify_scaled")
@@ -74,27 +74,39 @@ class HerokuAutoscaler(object):
     def min_response_time_in_seconds(self):
         return self.settings.MIN_RESPONSE_TIME_IN_MS / 1000
 
-    def _get_current_value_from_time_dict(self, time_dict):
-            now = datetime.datetime.now()
+    def _cmp_time_string(self, a, b):
+        a = a[0]
+        b = b[0]
+        a_hour = int(a[:a.find(":")])
+        b_hour = int(b[:b.find(":")])
+        if a_hour < b_hour:
+            return -1
+        elif a_hour > b_hour:
+            return 1
+        return 0
+
+    def _get_current_value_from_time_dict(self, time_dict, when=None):
             max_dynos = False
-            for start_time, max_value in time_dict.iteritems():
-                if not max_dynos or (now.hour < start_time[0]) and (now.minute < start_time[1]):
+            for start_time, max_value in sorted(time_dict.iteritems(), self._cmp_time_string, None, False):
+                start_hour = int(start_time[:start_time.find(":")])
+                start_minute = int(start_time[start_time.find(":") + 1:])
+                if not max_dynos or (when.hour >= start_hour and (when.minute >= start_minute or when.hour > start_hour)):
                     max_dynos = max_value
-                else:
-                    break
             return max_dynos
 
-    @property
-    def max_num_dynos(self):
+    def max_num_dynos(self, when=None):
+        if not when:
+            when = datetime.datetime.now()
         if type(self.settings.MAX_DYNOS) == type({}):
-            return self._get_current_value_from_time_dict(self.settings.MAX_DYNOS)
+            return self._get_current_value_from_time_dict(self.settings.MAX_DYNOS, when=when)
         else:
             return self.settings.MAX_DYNOS
 
-    @property
-    def min_num_dynos(self):
+    def min_num_dynos(self, when=None):
+        if not when:
+            when = datetime.datetime.now()
         if type(self.settings.MIN_DYNOS) == type({}):
-            return self._get_current_value_from_time_dict(self.settings.MIN_DYNOS)
+            return self._get_current_value_from_time_dict(self.settings.MIN_DYNOS, when=when)
         else:
             return self.settings.MIN_DYNOS
 
@@ -117,7 +129,7 @@ class HerokuAutoscaler(object):
 
     @property
     def outside_bounds(self):
-        return self.num_dynos < self.min_num_dynos or self.num_dynos > self.max_num_dynos
+        return self.num_dynos < self.min_num_dynos() or self.num_dynos > self.max_num_dynos()
 
     @property
     def needs_scale_up(self):
@@ -135,10 +147,18 @@ class HerokuAutoscaler(object):
         new_dynos = self.num_dynos - self.settings.INCREMENT
         self.heroku_scale(new_dynos)
 
+    def scale_to_nearest_bound(self):
+        if self.num_dynos > self.max_num_dynos():
+            self.heroku_scale(self.max_num_dynos())
+        else:
+            self.heroku_scale(self.min_num_dynos())
+
     def do_autoscale(self):
         """Calls scale up and down, based on need."""
-        if self.needs_scale_up:
-            if self.num_dynos < self.max_num_dynos:
+        if self.outside_bounds:
+            self.scale_to_nearest_bound()
+        elif self.needs_scale_up:
+            if self.num_dynos < self.max_num_dynos():
                 # We have room, scale up.
                 self.scale_up()
             elif self.settings.NOTIFY_IF_NEEDS_EXCEED_MAX:
@@ -146,7 +166,7 @@ class HerokuAutoscaler(object):
                 self.notification("notify_needs_above_max")
 
         elif self.needs_scale_down:
-            if self.num_dynos > self.min_num_dynos:
+            if self.num_dynos > self.min_num_dynos():
                 # We have room, scale down.
                 self.scale_down()
             elif self.settings.NOTIFY_IF_NEEDS_BELOW_MIN and self.num_dynos > 1:

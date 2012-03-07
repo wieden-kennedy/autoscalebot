@@ -1,13 +1,15 @@
 from copy import copy
+import datetime
 import time
 import urllib2
 from nose.tools import assert_equals
 from nose.plugins.skip import SkipTest
 from heroku_web_autoscale import TOO_LOW, JUST_RIGHT, TOO_HIGH
+from heroku_web_autoscale.conf import AutoscaleSettings
 from heroku_web_autoscale.models import HerokuAutoscaler
 
 
-class TestSettings:
+class TestSettings(AutoscaleSettings):
     pass
 
 test_settings = TestSettings()
@@ -55,6 +57,12 @@ class MockHerokuProcesses:
             return self.processes[self.current - 1]
 
 
+class MockBrokenHerokuProcesses(MockHerokuProcesses):
+
+    def scale(self):
+        raise Exception
+
+
 class MockHerokuApp:
 
     def __init__(self, *args, **kwargs):
@@ -64,6 +72,15 @@ class MockHerokuApp:
     def processes(self):
         if not hasattr(self, "_processes"):
             self._processes = {'web': MockHerokuProcesses(), }
+        return self._processes
+
+
+class MockBrokenHerokuApp(MockHerokuApp):
+
+    @property
+    def processes(self):
+        if not hasattr(self, "_processes"):
+            self._processes = {'web': MockBrokenHerokuProcesses(), }
         return self._processes
 
 
@@ -78,6 +95,11 @@ class MockHerokuAutoscaler(HerokuAutoscaler):
         if not hasattr(self, "_heroku_app"):
             self._heroku_app = MockHerokuApp()
         return self._heroku_app
+
+    def out_of_band_heroku_scale(self, num_dynos):
+        # Ugly mock out of band scale
+        self.heroku_app.processes["web"]._processes = [1, 2, 3, 4]
+        self._num_dynos = len([i for i in self.heroku_app.processes["web"]._processes])
 
 
 class MockValidResponse:
@@ -260,11 +282,45 @@ class TestHerokuAutoscaler:
         self.test_scaler.do_autoscale()
         assert_equals(self.test_scaler.num_dynos, 1)
 
-    def test_time_based_scale_up_works(self):
-        assert True == "Test written"
+    def test_max_dynos_from_time_based_settings_works(self):
+        one_off_test_settings = copy(test_settings)
+        one_off_test_settings.MAX_DYNOS = {
+            "0:00": 2,
+            "9:00": 5,
+            "17:00": 3
+        }
+        now_time = datetime.datetime.now()
+        self._test_scaler = MockHerokuAutoscaler(one_off_test_settings)
+        early_morning = datetime.datetime(now_time.year, now_time.month, now_time.day, 1, 0)
+        mid_day = datetime.datetime(now_time.year, now_time.month, now_time.day, 12, 0)
+        evening = datetime.datetime(now_time.year, now_time.month, now_time.day, 18, 0)
+        morning_off_by_minutes = datetime.datetime(now_time.year, now_time.month, now_time.day, 9, 5)
+        morning_exact = datetime.datetime(now_time.year, now_time.month, now_time.day, 9, 0)
+        assert_equals(self.test_scaler.max_num_dynos(when=early_morning), 2)
+        assert_equals(self.test_scaler.max_num_dynos(when=mid_day), 5)
+        assert_equals(self.test_scaler.max_num_dynos(when=evening), 3)
+        assert_equals(self.test_scaler.max_num_dynos(when=morning_off_by_minutes), 5)
+        assert_equals(self.test_scaler.max_num_dynos(when=morning_exact), 5)
 
-    def test_time_based_scale_down_works(self):
-        assert True == "Test written"
+    def test_min_dynos_from_time_based_settings_works(self):
+        one_off_test_settings = copy(test_settings)
+        one_off_test_settings.MIN_DYNOS = {
+            "0:00": 2,
+            "9:00": 5,
+            "17:00": 3
+        }
+        now_time = datetime.datetime.now()
+        self._test_scaler = MockHerokuAutoscaler(one_off_test_settings)
+        early_morning = datetime.datetime(now_time.year, now_time.month, now_time.day, 1, 0)
+        mid_day = datetime.datetime(now_time.year, now_time.month, now_time.day, 12, 0)
+        evening = datetime.datetime(now_time.year, now_time.month, now_time.day, 18, 0)
+        morning_off_by_minutes = datetime.datetime(now_time.year, now_time.month, now_time.day, 9, 5)
+        morning_exact = datetime.datetime(now_time.year, now_time.month, now_time.day, 9, 0)
+        assert_equals(self.test_scaler.min_num_dynos(when=early_morning), 2)
+        assert_equals(self.test_scaler.min_num_dynos(when=mid_day), 5)
+        assert_equals(self.test_scaler.min_num_dynos(when=evening), 3)
+        assert_equals(self.test_scaler.min_num_dynos(when=morning_off_by_minutes), 5)
+        assert_equals(self.test_scaler.min_num_dynos(when=morning_exact), 5)
 
     def test_custom_increments_work(self):
         one_off_test_settings = copy(test_settings)
@@ -289,14 +345,15 @@ class TestHerokuAutoscaler:
         assert_equals(self.test_scaler.num_dynos, 2)
 
     def test_if_max_is_changed_to_lower_than_current_scaling_works(self):
-        self.test_scaler.heroku_scale(2)
         one_off_test_settings = copy(test_settings)
-        one_off_test_settings.MAX_DYNOS = 0
-        one_off_test_settings.MIN_DYNOS = 0
+        one_off_test_settings.MAX_DYNOS = 2
         self._test_scaler = MockHerokuAutoscaler(one_off_test_settings)
         assert_equals(self.test_scaler.num_dynos, 1)
+        self.test_scaler.out_of_band_heroku_scale(4)
+
+        assert_equals(self.test_scaler.num_dynos, 4)
         self.test_scaler.do_autoscale()
-        assert_equals(self.test_scaler.num_dynos, 0)
+        assert_equals(self.test_scaler.num_dynos, 2)
 
     def test_scaling_clears_the_results_queue(self):
         assert_equals(self.test_scaler.num_dynos, 1)
@@ -308,6 +365,17 @@ class TestHerokuAutoscaler:
         self.test_scaler.do_autoscale()
         assert_equals(self.test_scaler.num_dynos, 2)
         assert_equals(self.test_scaler.results, [])
+
+    def test_a_mixed_stack_of_low_high_scales_to_the_min_needed_for_the_condition(self):
+        assert_equals(self.test_scaler.num_dynos, 1)
+        self.test_scaler.add_to_history(TOO_LOW)
+        self.test_scaler.add_to_history(TOO_LOW)
+        self.test_scaler.add_to_history(TOO_LOW)
+        self.test_scaler.add_to_history(TOO_HIGH)
+        self.test_scaler.add_to_history(TOO_HIGH)
+        self.test_scaler.add_to_history(TOO_HIGH)
+        self.test_scaler.do_autoscale()
+        assert_equals(self.test_scaler.num_dynos, 2)
 
     def test_ping_and_store_for_valid_url(self):
         urllib2.urlopen = mock_valid_urlopen
@@ -429,11 +497,12 @@ class TestHerokuAutoscaler:
         self.test_scaler.do_autoscale()
         assert_equals(len(self.test_scaler.backends[0].messages), 0)
 
-    def test_a_mixed_stack_of_low_high_scales_to_the_min_needed_for_the_condition(self):
-        assert True == "Test written"
-
     def test_notify_on_scale_fails_works(self):
-        assert True == "Test written"
+        self.test_scaler._heroku_app = MockBrokenHerokuApp()
+        assert_equals(len(self.test_scaler.backends[0].messages), 0)
+        self.test_scaler.scale_up()
+        assert_equals(len(self.test_scaler.backends[0].messages), 1)
+        assert "fail" in self.test_scaler.backends[0].messages[0]
 
     def test_notify_on_every_scale_works(self):
         assert_equals(len(self.test_scaler.backends[0].messages), 0)

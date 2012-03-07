@@ -108,9 +108,9 @@ Heroku-autoscale has a bunch of settings, so you should be able to tune it for m
 
         # Sets the max as 5 dynos from 9am-5pm local time, and 2 dynos otherwise.
         MAX_DYNOS = {
-            "0:00" = 2,
-            "9:00" = 5,
-            "17:00" = 2
+            "0:00": 2,
+            "9:00": 5,
+            "17:00": 2
         }
 
         # If you're using time-based settings, don't forget to set your time zone.  For django, that's:
@@ -127,9 +127,9 @@ Heroku-autoscale has a bunch of settings, so you should be able to tune it for m
 
         # Sets the min as 3 dynos from 8am-6pm local time, and 1 dyno otherwise.
         MIN_DYNOS = {
-            "0:00" = 1,
-            "8:00" = 3,
-            "18:00" = 1
+            "0:00": 1,
+            "8:00": 3,
+            "18:00": 1
         }
         ```
 
