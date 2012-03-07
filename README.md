@@ -140,25 +140,25 @@ Heroku-autoscale has a bunch of settings, so you should be able to tune it for m
     * A list of backends to call for all notify requests. Defaults to `[]`
 
 * `NOTIFY_IF_SCALE_DIFF_EXCEEDS_THRESHOLD` 
-    * (v0.3) Paired with the setting below, this setting will call the NOTIFICATION_BACKENDS if the scale differential in the given time period exceeds the threshold.  For example, if I see a scale of more than 10 dynos within 30 minutes, something intesting is happening with the site.  I'd probably like to know.  Defaults to `None`, and is disabled.
+    * (v0.3) Paired with the setting below, this setting will call the `NOTIFICATION_BACKENDS` if the scale differential in the given time period exceeds the threshold.  For example, if I see a scale of more than 10 dynos within 30 minutes, something intesting is happening with the site.  I'd probably like to know.  Defaults to `None`, and is disabled.
 
 * `NOTIFY_IF_SCALE_DIFF_EXCEEDS_PERIOD_IN_MINUTES` 
     * (v0.3) The time period to count differentials over. Defaults to `None`.
 
 * `NOTIFY_IF_NEEDS_EXCEED_MAX`
-    * Call the NOTIFICATION_BACKENDS when the app is at `MAX_DYNOS`, and the reponses are too slow. This likely means that `MAX_DYNOS` is too low, but django-heroku-autoscale won't scale it up without your explicit instructions. Defaults to `True`.
+    * Call the `NOTIFICATION_BACKENDS` when the app is at `MAX_DYNOS`, and the reponses are too slow. This likely means that `MAX_DYNOS` is too low, but django-heroku-autoscale won't scale it up without your explicit instructions. Defaults to `True`.
 
 * `NOTIFY_IF_NEEDS_BELOW_MIN`
-    * Call the NOTIFICATION_BACKENDS when the app is at `MIN_DYNOS`, and the reponses are below the scale down minimum (but above one).  Useful for learning if you have `MIN_DYNOS` set too low. Defaults to `False`.
+    * Call the `NOTIFICATION_BACKENDS` when the app is at `MIN_DYNOS`, and the reponses are below the scale down minimum (but above one).  Useful for learning if you have `MIN_DYNOS` set too low. Defaults to `False`.
 
 * `NOTIFY_ON_SCALE_FAILS`
-    * Call the NOTIFICATION_BACKENDS if a call to the scaling API fails for any reason. Note that a scale fail doesn't hurt anything, and scaling will be attempted again in the next heartbeat. Defaults to `False`.
+    * Call the `NOTIFICATION_BACKENDS` if a call to the scaling API fails for any reason. Note that a scale fail doesn't hurt anything, and scaling will be attempted again in the next heartbeat. Defaults to `False`.
 
 * `NOTIFY_ON_EVERY_SCALE`
-    * Call the NOTIFICATION_BACKENDS on every scale. Defaults to `False`.
+    * Call the `NOTIFICATION_BACKENDS` on every scale. Defaults to `False`.
 
 * `NOTIFY_ON_EVERY_PING`
-    * Call the NOTIFICATION_BACKENDS on every ping. Defaults to `False`.
+    * Call the `NOTIFICATION_BACKENDS` on every ping. Defaults to `False`.
 
 
 Notification
