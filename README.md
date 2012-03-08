@@ -31,19 +31,26 @@ If you are using django:
 
 2. Set these required settings in your `settings.py`, as well as any optional tuning settings.  Prefix all names on the settings list below with `AUTOSCALE_`
 
-    * `AUTOSCALE_HEROKU_APP_NAME`
-    * `AUTOSCALE_HEROKU_API_KEY`
+    ```python
+    AUTOSCALE_HEROKU_APP_NAME = "my-app-name"
+    AUTOSCALE_HEROKU_API_KEY = "1234567890abcdef1234567890abcdef"
+    ```
 
 3. If you want the built-in test view:
     
     * settings.py: 
 
-        ```INSTALLED_APPS += ("heroku_web_autoscale",)```
+        ```python
+        INSTALLED_APPS += ("heroku_web_autoscale",)
+        ```
 
     * urls.py: 
-        ```urlpatterns += patterns('',
-               url(r'^', include('heroku_web_autoscale.urls', app_name="heroku_web_autoscale", namespace="heroku_web_autoscale"), ),
-            )```
+
+        ```python
+        urlpatterns += patterns('',
+            url(r'^', include('heroku_web_autoscale.urls', app_name="heroku_web_autoscale", namespace="heroku_web_autoscale"), ),
+        )
+        ```
 
 4. Add it to your Procfile:
 
