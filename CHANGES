@@ -1,3 +1,8 @@
+*0.2*
+
+* Better django integration includes a heartbeat url and view
+* Time-based MAX and MIN settings
+* Notifications via NOTIFICATION_BACKENDS
 
 0.1
 ---
