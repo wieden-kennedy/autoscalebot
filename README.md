@@ -89,13 +89,20 @@ Heroku-autoscale has a bunch of settings, so you should be able to tune it for m
 
     * the url autoscale should hit, and expect a response in a given time. Defaults to `/heroku-autoscale/heartbeat/`
 
+* `HEARTBEAT_TYPE`
+
+    * Two options:
+
+        * `SIMPLE` scales solely based on response time, using `MAX_RESPONSE_TIME_IN_MS` and `MIN_RESPONSE_TIME_IN_MS`
+        * `ADVANCED` asks the heartbeat url to suggest scaling. It sends state data via GET to the heartbeat url, and expects JSON dictionary of services and instructions from the heartbeat url in return.  See "Advanced Scaling" below for details.
+
 * `MAX_RESPONSE_TIME_IN_MS` 
 
-    * the maximum time a response can take, before it counts as "too slow". Defaults to `1000`.
+    * the maximum time a response can take, before it counts as "too slow". Defaults to `1000`. Used for `SIMPLE` heartbeats only.
 
 * `MIN_RESPONSE_TIME_IN_MS` 
 
-    * the minimum time a response can take, before it counts as "too fast". Defaults to `200`.
+    * the minimum time a response can take, before it counts as "too fast". Defaults to `200`. Used for `SIMPLE` heartbeats only.
 
 * `NUMBER_OF_FAILS_TO_SCALE_UP_AFTER` 
 
@@ -187,11 +194,42 @@ NOTIFICATION_BACKENDS = [
 ]
 ```
 
-
 Making a good heartbeat URL
 ---------------------------
 
 The best heartbeat url will test against the bottlenecks your app is most likely to have as it scales up.  The bundled django app provides a url that hits the cache, database, and disk IO.  To make autoscale fit your app, you're best off writing a custom view that emulates your user's most common actions.
+
+Advanced Scaling
+----------------
+
+### Request
+
+Autoscale will post to the heartbeat url, with the following parameters sent via GET
+
+    * timestamp - the timestamp of the request (float, UTC seconds from epoch.)  See [`time.time()](http://docs.python.org/library/time.html#time.time) for details.
+    * a variable for each process type (`web`, `celery`, etc ), set to its current number of dynos.
+
+    For example, a sample request could be:
+
+    ```
+    http:///myapp.com/heartbeat/?timestamp=1334098644.37&web=3&celery=2&herokuautoscale=1
+    ```
+
+### Response
+
+In advanced scaling, the heartbeat is responsible for doing all necessary checks on the local environment, task/request queue, etc, and deciding what the correct scaling action is.  It returns those decisions via a JSON-encoded response.  
+
+A sample response could be:
+
+        ```json
+        {
+            'web': 'scale_up',
+            'celery': 'steady',
+            'herokuautoscale': 'steady'
+        }
+        ```
+
+Possible instructions are `scale_up`, `steady`, and `scale_down`. In the absence of a worker type, 'steady' is assumed.
 
 
 Django's staticfiles gotcha, and some delightful side-effects of autoscale
@@ -222,12 +260,6 @@ Roadmap
 
 * Time-based notification thresholds
 * Setting to have a minimum cool-off time between scales
-
-
-
-
-Recent updates (full log in CHANGES)
-------------------------------------
 
 
 *0.2*

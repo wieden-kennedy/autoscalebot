@@ -18,6 +18,7 @@ class AutoscaleSettings:
             "HEROKU_APP_NAME": None,
             "HEROKU_API_KEY": None,
             "HEARTBEAT_INTERVAL_IN_SECONDS": 30,
+            "HEARTBEAT_TYPE": "SIMPLE",
             "HEARTBEAT_URL": "/heroku-autoscale/heartbeat/:1",
             "MAX_RESPONSE_TIME_IN_MS": 1000,
             "MIN_RESPONSE_TIME_IN_MS": 200,

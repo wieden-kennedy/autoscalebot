@@ -203,8 +203,13 @@ class HerokuAutoscaler(object):
         return diff
 
     def full_heartbeat(self):
-        heartbeat_time = self.ping_and_store()
-        self.do_autoscale()
+        print self.settings.HEARTBEAT_TYPE
+        if self.settings.HEARTBEAT_TYPE.lower() == "simple":
+            heartbeat_time = self.ping_and_store()
+            self.do_autoscale()
+        else:
+            raise Exception("Not implemented")
+
         return heartbeat_time
 
 try:
