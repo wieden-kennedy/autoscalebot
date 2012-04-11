@@ -206,7 +206,7 @@ Advanced Scaling
 
 Autoscale will post to the heartbeat url, with the following parameters sent via GET
 
-* timestamp - the timestamp of the request (float, UTC seconds from epoch.)  See [`time.time()`](http://docs.python.org/library/time.html#time.time) for details.
+* timestamp - the timestamp of the request (float, UTC seconds from epoch.)  See [python time.time()](http://docs.python.org/library/time.html#time.time) for details.
 * a variable for each process type (`web`, `celery`, etc ), set to its current number of dynos.
 
 For example, a sample request could be:
@@ -243,6 +243,13 @@ There's a truth about Heroku and all other cloud-based services:  If no traffic 
 The problem, of course, is that once Heroku kills your dyno, the new one has to re-run collectstatic before it can serve the request - and that can take a while.  `django-heroku-autoscale`'s heartbeats have a very nice side effect: if you set them low enough (every couple minutes for small sites), and you're properly minimally sized, each dyno will get traffic, and Heroku will never kill them off.
 
 Roadmap 
+------------------------------------
+
+*0.4*
+
+* Nothing on the roadmap yet!
+
+Releases 
 ------------------------------------
 
 *0.3*
