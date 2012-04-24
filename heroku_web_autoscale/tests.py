@@ -520,5 +520,7 @@ class TestHerokuAutoscaler:
         self.test_scaler.scale_up()
         assert_equals([len(b.messages) for b in self.test_scaler.backends], [1, 1])
 
+    def test_advanced_scaling_tests_written(self):
+        assert True == "This has been written"
 
 # TODO: django tests

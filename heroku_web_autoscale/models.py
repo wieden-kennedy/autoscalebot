@@ -173,7 +173,7 @@ class HerokuAutoscaler(object):
                 # We're at the min, but could scale down further. Notify if enabled.
                 self.notification("notify_needs_below_min")
 
-    def ping_and_store(self):
+    def simple_ping_and_store(self):
         """Pings the url, records the response time, and stores the results."""
         start_time = time.time()
         errored_out = False
@@ -205,7 +205,7 @@ class HerokuAutoscaler(object):
     def full_heartbeat(self):
         print self.settings.HEARTBEAT_TYPE
         if self.settings.HEARTBEAT_TYPE.lower() == "simple":
-            heartbeat_time = self.ping_and_store()
+            heartbeat_time = self.simple_ping_and_store()
             self.do_autoscale()
         else:
             raise Exception("Not implemented")

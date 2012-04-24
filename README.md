@@ -199,6 +199,12 @@ Making a good heartbeat URL
 
 The best heartbeat url will test against the bottlenecks your app is most likely to have as it scales up.  The bundled django app provides a url that hits the cache, database, and disk IO.  To make autoscale fit your app, you're best off writing a custom view that emulates your user's most common actions.
 
+Scaling Backends
+----------------
+
+Backend either return a json dictionary of services, and what to do for each of them, or a plain text response.
+
+
 Advanced Scaling
 ----------------
 
@@ -247,26 +253,65 @@ Roadmap
 
 *0.4*
 
-* Nothing on the roadmap yet!
+* Time-based notification thresholds
+
 
 Releases 
 ------------------------------------
 
 *0.3*
 
-* Advanced scaling mode:
-    * autoscaler passes the request timestamp and the current number of dynos
-    * the app returns with JSON indicating the scaling needs:
+Big update. This release splits scaling and load measurement into two new backends, and provides a new streamlined way to configure autoscale's settings. 
 
-        ```json
-        {
-            'web': 'scale_up',
-            'celery': 'steady'
+Backends:
+
+* Load Measurement backends. These backend are responsible for handling the heartbeat response, and converting to 'scale_up', 'scale_down', or 'steady'.
+
+    * `ResponseTimeBackend`
+        * Scales based on a set of response times for a url.
+    * `ServiceTimeBackend`
+        * Scales based on the internal service time of the last requests.
+    * `QueueSizeBackend`
+        * Scales based on the number of waiting requests for the dynos.
+    * `CeleryQueueSizeBackend`
+        * Scales based on the number of waiting Celery tasks.
+    * `AppDecisionBackend`
+        * Scales based on the response from the app: 'scale_up', 'scale_down' or 'steady'.
+
+* Decision Backends:
+    * `ConsecutiveThresholdBackend`
+        * If the number of consecutive `scale_up` or `scale_down` responses exceeds the threshold, do the scale.
+    * `AverageThresholdBackend`
+        * If the average result over a given set is `scale_up` or `scale_down`, do the scale.
+    * `ImmediateBackend`
+        * Scales based on every heartbeat. Equivalent to using `ConsecutiveThresholdBackend` with `NUMBER_OF_HEARTBEATS = 1`
+
+Settings:
+
+```python
+AUTOSCALE_BACKENDS = {
+    'web': {
+        'LOAD_MEASUREMENT': {
+            'BACKEND': ResponseTimeBackend,
+            'settings': {}
+        },
+        'DECISION': {
+            'BACKEND': ConsecutiveThresholdBackend,
+            'settings': {}
+        },
+        'NOTIFICATION': {
+            'BACKEND': [
+                'heroku_web_autoscale.backends.notification.DjangoEmailBackend',
+                'heroku_web_autoscale.backends.notification.ConsoleBackend',
+            ],
+            'settings': {
+                'custom_k': 'val',
+                'POST_SCALE_WAIT_TIME': 60,  // seconds
+            },
         }
-        ```
-
-* Time-based notification thresholds
-* Setting to have a minimum cool-off time between scales
+    },
+}
+```
 
 
 *0.2*
