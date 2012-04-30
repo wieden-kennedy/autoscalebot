@@ -74,6 +74,13 @@ class HerokuAutoscaler(object):
     def min_response_time_in_seconds(self):
         return self.settings.MIN_RESPONSE_TIME_IN_MS / 1000
 
+    @property
+    def process_name(self):
+        """
+        Return the name of the process to autoscale, defaults to web
+        """
+        return self getattr(settings, 'PROCESS_NAME', 'web')
+
     def _cmp_time_string(self, a, b):
         a = a[0]
         b = b[0]
