@@ -292,19 +292,19 @@ Settings:
 AUTOSCALE_BACKENDS = {
     'web': {
         'LOAD_MEASUREMENT': {
-            'BACKEND': ResponseTimeBackend,
-            'settings': {}
+            'BACKEND': 'heroku_web_autoscale.backends.load_measurement.ResponseTimeBackend',
+            'SETTINGS': {}
         },
         'DECISION': {
-            'BACKEND': ConsecutiveThresholdBackend,
-            'settings': {}
+            'BACKEND': 'heroku_web_autoscale.backends.decision.ConsecutiveThresholdBackend',
+            'SETTINGS': {}
         },
         'NOTIFICATION': {
             'BACKEND': [
                 'heroku_web_autoscale.backends.notification.DjangoEmailBackend',
                 'heroku_web_autoscale.backends.notification.ConsoleBackend',
             ],
-            'settings': {
+            'SETTINGS': {
                 'custom_k': 'val',
                 'POST_SCALE_WAIT_TIME': 60,  // seconds
             },
