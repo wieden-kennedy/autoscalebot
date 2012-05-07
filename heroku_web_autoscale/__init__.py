@@ -10,3 +10,7 @@ SCALE_DOWN = -1
 
 class MissingParameter(Exception):
     pass
+
+
+class NotYetImplementedException(Exception):
+    pass

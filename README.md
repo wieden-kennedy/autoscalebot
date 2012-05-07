@@ -87,44 +87,44 @@ Heroku-autoscale has a bunch of settings, so you should be able to tune it for m
     This is the heart of autoscale's configuration.  It allows for a choice and configuration of measurement, decision, and notification backends. Below is an example, handling scaling for web and celery dynos.  See below for detailed backend documentation.
 
     ```python
-        AUTOSCALE_BACKENDS = {
-            'web': {
-                'MEASUREMENT': {
-                    'BACKEND': 'heroku_web_autoscale.backends.measurement.ResponseTimeBackend',
-                    'SETTINGS': {
-                        'MIN_TIME_MS': 500,
-                        'MAX_TIME_MS': 1000,
-                        'HEARTBEAT_URL' = "/my-custom-heartbeat/"
-                    }
-                },
-                'DECISION': {
-                    'BACKEND': 'heroku_web_autoscale.backends.decision.ConsecutiveThresholdBackend',
-                    'SETTINGS': {
-                        'POST_SCALE_WAIT_TIME_SECONDS': 60,
-                    }
-                },
-                'NOTIFICATION': {
-                    'BACKENDS': [
-                        'heroku_web_autoscale.backends.notification.DjangoEmailBackend',
-                        'heroku_web_autoscale.backends.notification.ConsoleBackend',
-                    ],
-                    'SETTINGS': {},
+    AUTOSCALE_BACKENDS = {
+        'web': {
+            'MEASUREMENT': {
+                'BACKEND': 'heroku_web_autoscale.backends.measurement.ResponseTimeBackend',
+                'SETTINGS': {
+                    'MIN_TIME_MS': 500,
+                    'MAX_TIME_MS': 1000,
+                    'HEARTBEAT_URL' = "/my-custom-heartbeat/"
                 }
             },
-            'celery': {
-                'MEASUREMENT': {
-                    'BACKEND': 'heroku_web_autoscale.backends.measurement.CeleryQueueSizeBackend',
-                },
-                'DECISION': {
-                    'BACKEND': 'heroku_web_autoscale.backends.decision.AverageThresholdBackend',
-                },
-                'NOTIFICATION': {
-                    'BACKENDS': [
-                        'heroku_web_autoscale.backends.notification.LoggerBackend',
-                    ],
+            'DECISION': {
+                'BACKEND': 'heroku_web_autoscale.backends.decision.ConsecutiveThresholdBackend',
+                'SETTINGS': {
+                    'POST_SCALE_WAIT_TIME_SECONDS': 60,
                 }
             },
-        }
+            'NOTIFICATION': {
+                'BACKENDS': [
+                    'heroku_web_autoscale.backends.notification.DjangoEmailBackend',
+                    'heroku_web_autoscale.backends.notification.ConsoleBackend',
+                ],
+                'SETTINGS': {},
+            }
+        },
+        'celery': {
+            'MEASUREMENT': {
+                'BACKEND': 'heroku_web_autoscale.backends.measurement.CeleryQueueSizeBackend',
+            },
+            'DECISION': {
+                'BACKEND': 'heroku_web_autoscale.backends.decision.AverageThresholdBackend',
+            },
+            'NOTIFICATION': {
+                'BACKENDS': [
+                    'heroku_web_autoscale.backends.notification.LoggerBackend',
+                ],
+            }
+        },
+    }
     ```
 
 
@@ -132,10 +132,63 @@ Backends
 --------
 To allow for tuning to your app's particular needs, autoscale provides backends for load measurement, decision-making, and notification.  You can also write your own backend, by subclassing the base class of any of them.  Pull requests for additional backends are also welcome!
 
+There are five backends:  Measure, Interpret, Decide, Scale, and Notify.  Here's what they do:
+
+* Measure: finds out how loaded your app is.
+* Interpret: makes a value judgement on that measurement, converting it to scaling instructions
+* Decide: decides whether to scale up, down, or stay steady based on recent information
+* Scale: performs the scale
+* Notify: informs administrators.
+
+
 
 ### Measurement backends
 
-These backends are responsible for calling and handling the heartbeat response, and returning `SCALE_UP`, `SCALE_DOWN`, or `STEADY`.  They are passed the current number of dynos, and the request timestamp.
+These backends are responsible for querying, pinging, or otherwise measuring the responsiveness of an app. They return a dictionary with those results.
+
+The backends, with their possible settings and default values.
+
+* `ResponseTimeBackend`
+    
+    Scales based on a set of response times for a given url.
+
+    * `HEARTBEAT_URL` = "/heroku-autoscale/heartbeat/"
+    * `HEARTBEAT_INTERVAL_IN_SECONDS` = 30
+
+    Returns:
+
+    ```python
+    {
+        'backend': 'ResponseTimeBackend',
+        'time': 350, // ms
+    }
+    ```
+
+* `ServiceTimeBackend`
+
+    Scales based on the internal service time of the last heartbeat response.
+
+    * `SCALE_DOWN_TIME_MS` = 200
+    * `SCALE_UP_TIME_MS` = 1000
+    * `HEARTBEAT_URL` = "/heartbeat"
+    * `HEARTBEAT_INTERVAL_IN_SECONDS` = 30
+
+* `CeleryQueueSizeBackend`
+
+    Scales based on the number of waiting Celery tasks.
+
+    * `SCALE_DOWN_SIZE` = 0
+    * `SCALE_UP_SIZE` = 10
+
+* `AppDecisionBackend`
+
+    Expects `'SCALE_UP'`, `'SCALE_DOWN'` or `'STEADY'` to be returned by the app, and passes them on directly.
+
+
+
+### Interpretation backends
+
+These backends are responsible turning the measurement results into `SCALE_UP`, `SCALE_DOWN`, or `STEADY`.  They are passed the current number of dynos, the request timestamp, and the measurement backend results
 
 The backends, with their possible settings and default values.
 
@@ -171,6 +224,8 @@ The backends, with their possible settings and default values.
 
 
 ### Decision Backends
+
+Decision backends decide when to scale, based on the most recent set of responses.
 
 ##### All Backends
 
