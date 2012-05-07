@@ -73,14 +73,6 @@ Available settings
 
 Heroku-autoscale has a bunch of settings, so you should be able to tune it for most needs.
 
-* `HEROKU_APP_NAME` 
-    
-    * *Required*.  The name of your app, ie "dancing-forest-1234".
-
-* `HEROKU_API_KEY`
-    
-    * *Required*. Your API key - you can get it on your [account page](https://api.heroku.com/account).
-
 
 * `AUTOSCALE_BACKENDS`
 
@@ -103,6 +95,13 @@ Heroku-autoscale has a bunch of settings, so you should be able to tune it for m
                     'POST_SCALE_WAIT_TIME_SECONDS': 60,
                 }
             },
+            'SCALING' : {
+                'BACKEND': 'heroku_web_autoscale.backends.scaling.HerokuBackend'
+                'SETTINGS': {
+                    'APP_NAME': 'dancing-forest-1234',
+                    'API_KEY': 'abcdef1234567890abcdef12',
+                }
+            }
             'NOTIFICATION': {
                 'BACKENDS': [
                     'heroku_web_autoscale.backends.notification.DjangoEmailBackend',
@@ -118,6 +117,13 @@ Heroku-autoscale has a bunch of settings, so you should be able to tune it for m
             'DECISION': {
                 'BACKEND': 'heroku_web_autoscale.backends.decision.AverageThresholdBackend',
             },
+            'SCALING' : {
+                'BACKEND': 'heroku_web_autoscale.backends.scaling.HerokuBackend'
+                'SETTINGS': {
+                    'APP_NAME': 'dancing-forest-1234',
+                    'API_KEY': 'abcdef1234567890abcdef12',
+                }
+            }
             'NOTIFICATION': {
                 'BACKENDS': [
                     'heroku_web_autoscale.backends.notification.LoggerBackend',
@@ -132,11 +138,10 @@ Backends
 --------
 To allow for tuning to your app's particular needs, autoscale provides backends for load measurement, decision-making, and notification.  You can also write your own backend, by subclassing the base class of any of them.  Pull requests for additional backends are also welcome!
 
-There are five backends:  Measure, Interpret, Decide, Scale, and Notify.  Here's what they do:
+There are four backends:  Measure, Interpret, Decide, Scale, and Notify.  Here's what they do:
 
 * Measure: finds out how loaded your app is.
-* Interpret: makes a value judgement on that measurement, converting it to scaling instructions
-* Decide: decides whether to scale up, down, or stay steady based on recent information
+* Decide: decides whether to scale up, down, or stay steady based on recent measurements
 * Scale: performs the scale
 * Notify: informs administrators.
 
@@ -152,15 +157,15 @@ The backends, with their possible settings and default values.
     
     Scales based on a set of response times for a given url.
 
-    * `HEARTBEAT_URL` = "/heroku-autoscale/heartbeat/"
-    * `HEARTBEAT_INTERVAL_IN_SECONDS` = 30
+    * `MEASUREMENT_URL` = "/heroku-autoscale/heartbeat/"
+    * `MEASUREMENT_INTERVAL_IN_SECONDS` = 30
 
     Returns:
 
     ```python
     {
         'backend': 'ResponseTimeBackend',
-        'time': 350, // ms
+        'data': 350, // ms
     }
     ```
 
@@ -168,68 +173,85 @@ The backends, with their possible settings and default values.
 
     Scales based on the internal service time of the last heartbeat response.
 
-    * `SCALE_DOWN_TIME_MS` = 200
-    * `SCALE_UP_TIME_MS` = 1000
-    * `HEARTBEAT_URL` = "/heartbeat"
-    * `HEARTBEAT_INTERVAL_IN_SECONDS` = 30
+    Settings: 
+
+    * `MEASUREMENT_URL` = "/heartbeat"
+    * `MEASUREMENT_INTERVAL_IN_SECONDS` = 30
+
+    Returns:
+
+    ```python
+    {
+        'backend': 'ServiceTimeBackend',
+        'data': 350, // ms
+    }
+    ```
+
 
 * `CeleryQueueSizeBackend`
 
     Scales based on the number of waiting Celery tasks.
 
-    * `SCALE_DOWN_SIZE` = 0
-    * `SCALE_UP_SIZE` = 10
-
-* `AppDecisionBackend`
-
-    Expects `'SCALE_UP'`, `'SCALE_DOWN'` or `'STEADY'` to be returned by the app, and passes them on directly.
-
-
-
-### Interpretation backends
-
-These backends are responsible turning the measurement results into `SCALE_UP`, `SCALE_DOWN`, or `STEADY`.  They are passed the current number of dynos, the request timestamp, and the measurement backend results
-
-The backends, with their possible settings and default values.
-
-* `ResponseTimeBackend`
+    Settings: 
     
-    Scales based on a set of response times for a given url.
+    * `MEASUREMENT_URL` = "/heartbeat"
 
-    * `SCALE_DOWN_TIME_MS` = 400
-    * `SCALE_UP_TIME_MS` = 1200
-    * `HEARTBEAT_URL` = "/heroku-autoscale/heartbeat/"
-    * `HEARTBEAT_INTERVAL_IN_SECONDS` = 30
+    Returns:
 
-* `ServiceTimeBackend`
-
-    Scales based on the internal service time of the last heartbeat response.
-
-    * `SCALE_DOWN_TIME_MS` = 200
-    * `SCALE_UP_TIME_MS` = 1000
-    * `HEARTBEAT_URL` = "/heartbeat"
-    * `HEARTBEAT_INTERVAL_IN_SECONDS` = 30
-
-* `CeleryQueueSizeBackend`
-
-    Scales based on the number of waiting Celery tasks.
-
-    * `SCALE_DOWN_SIZE` = 0
-    * `SCALE_UP_SIZE` = 10
+    ```python
+    {
+        'backend': 'CeleryQueueSizeBackend',
+        'data': 15, // tasks in queue
+    }
+    ```
 
 * `AppDecisionBackend`
+    
+    Expects JSON data to be returned directly from a URL
 
-    Expects `'SCALE_UP'`, `'SCALE_DOWN'` or `'STEADY'` to be returned by the app, and passes them on directly.
+    Settings
+    
+    * `MEASUREMENT_URL` = "/heartbeat"
+
+    Returns: 
+
+    
+    ```python
+    {
+        'backend': 'CeleryQueueSizeBackend',
+        'data': {
+            'my_custom_key': 'my_val',
+            'another_key': 'another_val'
+        }
+    }
+    ```
 
 
 
 ### Decision Backends
 
-Decision backends decide when to scale, based on the most recent set of responses.
+Decision backends decide when to scale and what to scale to, based on the most recent set of responses.
 
-##### All Backends
 
-All decision backends have these three settings:
+##### Common settings
+
+All decision backends have these settings:
+
+* `MIN_DYNOS` 
+
+    * the absolute minimum number of dynos. Default to `1`. This value is either an integer, or a dictionary of time/max pairs. E.g.
+
+        ```python
+        # sets the absolute min as 2 dynos
+        MIN_DYNOS = 2
+
+        # Sets the min as 3 dynos from 8am-6pm local time, and 1 dyno otherwise.
+        MIN_DYNOS = {
+            "0:00": 1,
+            "8:00": 3,
+            "18:00": 1
+        }
+        ```
 
 * `MAX_DYNOS` 
 
@@ -250,21 +272,6 @@ All decision backends have these three settings:
         TIME_ZONE = 'America/Vancouver'
         ```
 
-* `MIN_DYNOS` 
-
-    * the absolute minimum number of dynos. Default to `1`. This value is either an integer, or a dictionary of time/max pairs. E.g.
-
-        ```python
-        # sets the absolute min as 2 dynos
-        MIN_DYNOS = 2
-
-        # Sets the min as 3 dynos from 8am-6pm local time, and 1 dyno otherwise.
-        MIN_DYNOS = {
-            "0:00": 1,
-            "8:00": 3,
-            "18:00": 1
-        }
-        ```
 
 * `INCREMENT` 
     * the number of dynos to add or remove on scaling. Defaults to `1`.
@@ -275,34 +282,47 @@ All decision backends have these three settings:
 
 ##### ConsecutiveThresholdBackend
 
-If the number of consecutive `SCALE_UP` or `SCALE_DOWN` responses exceeds the threshold, do the scale. Available settings:
+If the number of consecutive responses are outside `MIN_MEASUREMENT_VALUE` or `MAX_MEASUREMENT_VALUE`, do the scale. Available settings:
 
 * `NUMBER_OF_FAILS_TO_SCALE_UP_AFTER` = 3
 * `NUMBER_OF_PASSES_TO_SCALE_DOWN_AFTER` = 5
-* `MAX_DYNOS` = 3
+* `MIN_MEASUREMENT_VALUE` = 400
+* `MAX_MEASUREMENT_VALUE` = 1200
 * `MIN_DYNOS` = 1
+* `MAX_DYNOS` = 3
 * `INCREMENT` = 1
 * `POST_SCALE_WAIT_TIME_SECONDS` = 5
 
 
 ##### AverageThresholdBackend
 
-If the average result over a given set is `SCALE_UP` or `SCALE_DOWN`, do the scale. Available settings:
+If the average result over a given set is outside `MIN_MEASUREMENT_VALUE` or `MAX_MEASUREMENT_VALUE`, do the scale. Available settings:
 
 * `NUMBER_OF_MEASUREMENTS_TO_AVERAGE` = 3
-* `MAX_DYNOS` = 3
+* `MIN_MEASUREMENT_VALUE` = 0
+* `MAX_MEASUREMENT_VALUE` = 20
 * `MIN_DYNOS` = 1
+* `MAX_DYNOS` = 3
 * `INCREMENT` = 1
 * `POST_SCALE_WAIT_TIME_SECONDS` = 5
 
-##### ImmediateBackend
 
-Scales based on every heartbeat. Equivalent to using `ConsecutiveThresholdBackend` with `NUMBER_OF_MEASUREMENTS_TO_AVERAGE = 1`.  Available settings:
 
-* `MAX_DYNOS` = 3
-* `MIN_DYNOS` = 1
-* `INCREMENT` = 1
-* `POST_SCALE_WAIT_TIME_SECONDS` = 5
+### Scaling Backends
+
+Scaling backends actually do the scaling.  Right now, there's only a heroku backend, but pull requests for other paas stacks are welcome.  You can also subclass this backend to tie into your pupppet, chef, etc setup.
+
+##### HerokuScaleBackend
+
+Scales heroku dynos. Requires two settings to be passed:
+
+* `APP_NAME` 
+    
+    * *Required*.  The name of your app, ie "dancing-forest-1234".
+
+* `API_KEY`
+    
+    * *Required*. Your API key - you can get it on your [account page](https://api.heroku.com/account).
 
 
 
