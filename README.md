@@ -73,60 +73,60 @@ Available settings
 
 Heroku-autoscale has a bunch of settings, so you should be able to tune it for most needs.  The settings allow for a choice and configuration of measurement, decision, scale, and notification backends. Below is an example handling scaling for web and celery dynos.  See below for detailed backend documentation.
 
-    ```python
-    AUTOSCALE_BACKENDS = {
-        'web': {
-            'MEASUREMENT': {
-                'BACKEND': 'heroku_web_autoscale.backends.measurement.ResponseTimeBackend',
-                'SETTINGS': {
-                    'MIN_TIME_MS': 500,
-                    'MAX_TIME_MS': 1000,
-                    'HEARTBEAT_URL' = "/my-custom-measurement/"
-                }
-            },
-            'DECISION': {
-                'BACKEND': 'heroku_web_autoscale.backends.decision.ConsecutiveThresholdBackend',
-                'SETTINGS': {
-                    'POST_SCALE_WAIT_TIME_SECONDS': 60,
-                }
-            },
-            'SCALING' : {
-                'BACKEND': 'heroku_web_autoscale.backends.scaling.HerokuBackend'
-                'SETTINGS': {
-                    'APP_NAME': 'dancing-forest-1234',
-                    'API_KEY': 'abcdef1234567890abcdef12',
-                }
-            }
-            'NOTIFICATION': {
-                'BACKENDS': [
-                    'heroku_web_autoscale.backends.notification.DjangoEmailBackend',
-                    'heroku_web_autoscale.backends.notification.ConsoleBackend',
-                ],
-                'SETTINGS': {},
+```python
+AUTOSCALE_BACKENDS = {
+    'web': {
+        'MEASUREMENT': {
+            'BACKEND': 'heroku_web_autoscale.backends.measurement.ResponseTimeBackend',
+            'SETTINGS': {
+                'MIN_TIME_MS': 500,
+                'MAX_TIME_MS': 1000,
+                'HEARTBEAT_URL' = "/my-custom-measurement/"
             }
         },
-        'celery': {
-            'MEASUREMENT': {
-                'BACKEND': 'heroku_web_autoscale.backends.measurement.CeleryQueueSizeBackend',
-            },
-            'DECISION': {
-                'BACKEND': 'heroku_web_autoscale.backends.decision.AverageThresholdBackend',
-            },
-            'SCALING' : {
-                'BACKEND': 'heroku_web_autoscale.backends.scaling.HerokuBackend'
-                'SETTINGS': {
-                    'APP_NAME': 'dancing-forest-1234',
-                    'API_KEY': 'abcdef1234567890abcdef12',
-                }
-            }
-            'NOTIFICATION': {
-                'BACKENDS': [
-                    'heroku_web_autoscale.backends.notification.LoggerBackend',
-                ],
+        'DECISION': {
+            'BACKEND': 'heroku_web_autoscale.backends.decision.ConsecutiveThresholdBackend',
+            'SETTINGS': {
+                'POST_SCALE_WAIT_TIME_SECONDS': 60,
             }
         },
-    }
-    ```
+        'SCALING' : {
+            'BACKEND': 'heroku_web_autoscale.backends.scaling.HerokuBackend'
+            'SETTINGS': {
+                'APP_NAME': 'dancing-forest-1234',
+                'API_KEY': 'abcdef1234567890abcdef12',
+            }
+        }
+        'NOTIFICATION': {
+            'BACKENDS': [
+                'heroku_web_autoscale.backends.notification.DjangoEmailBackend',
+                'heroku_web_autoscale.backends.notification.ConsoleBackend',
+            ],
+            'SETTINGS': {},
+        }
+    },
+    'celery': {
+        'MEASUREMENT': {
+            'BACKEND': 'heroku_web_autoscale.backends.measurement.CeleryQueueSizeBackend',
+        },
+        'DECISION': {
+            'BACKEND': 'heroku_web_autoscale.backends.decision.AverageThresholdBackend',
+        },
+        'SCALING' : {
+            'BACKEND': 'heroku_web_autoscale.backends.scaling.HerokuBackend'
+            'SETTINGS': {
+                'APP_NAME': 'dancing-forest-1234',
+                'API_KEY': 'abcdef1234567890abcdef12',
+            }
+        }
+        'NOTIFICATION': {
+            'BACKENDS': [
+                'heroku_web_autoscale.backends.notification.LoggerBackend',
+            ],
+        }
+    },
+}
+```
 
 
 Backends
@@ -225,6 +225,7 @@ Settings:
 {
     'MEASUREMENT_URL' : "/measurement"
 }
+```
 
 Returns: 
 
@@ -356,59 +357,86 @@ Scales heroku dynos. Requires two settings to be passed:
 Notification Backends
 =====================
 
-Notification backends are there to let you know when scale ups, downs, or other interesting events happen.  Autoscale ships with a few, and pull requests for more are welcome.  All backends take the same setttings.
+Notification backends are there to let you know when scale ups, downs, or other interesting events happen.  Autoscale ships with a few, and pull requests for more are welcome.  The backends all take the same setttings.
 
 
-#### Notification Backends:
+### Notification Backends:
 
 * `ConsoleBackend`, which prints messages to the console, 
 * `DjangoEmailBackend`, which emails the `ADMINS` when used in a django project,
 * `LoggerBackend`, which sends messages to the python logger.
 * `TestBackend`, which adds messages to a list, and is used for unit testing.
 
-#### Notification Backend Settings:
+### Notification Backend Settings:
 
-* `NOTIFY_ON_EVERY_MEASUREMENT` = False
-    
-    Send a notification with the result of every measurement
 
-* `NOTIFY_ON_EVERY_SCALE` = False
+#### NOTIFY_ON_EVERY_MEASUREMENT
 
-    Send a notification on every scale
+Send a notification with the result of every measurement. Defaults to:
 
-* `NOTIFY_IF_NEEDS_BELOW_MIN` = False
+```python:
+NOTIFY_ON_EVERY_MEASUREMENT = False
+```
 
-    Send a notification if scaling down is called for, but we're already at `MIN_DYNOS`.
+#### NOTIFY_ON_EVERY_SCALE
 
-* `NOTIFY_IF_NEEDS_EXCEED_MAX` = True
+Send a notification on every scale. Defaults to:
 
-    Send a notification if scaling up is called for, but we're already at `MAX_DYNOS`.
+```python:
+NOTIFY_ON_EVERY_SCALE = False
+```
 
-* (v0.4) `NOTIFY_IF_SCALING_IS_TOO_RAPID` = False
+#### NOTIFY_IF_NEEDS_BELOW_MIN
 
-    Notify if rapid scaling happens.  This setting is paired with the two below.  If the number of scales is larger than `NOTIFY_IF_SCALING_IS_TOO_RAPID_NUM_SCALES` over the past `NOTIFY_IF_SCALING_IS_TOO_RAPID_TIME_PERIOD_MINUTES`, a notification will be sent.
+Send a notification if scaling down is called for, but we're already at `MIN_DYNOS`. Defaults to:
 
-* (v0.4) `NOTIFY_IF_SCALING_IS_TOO_RAPID_NUM_SCALES` = 5
+```python:
+NOTIFY_IF_NEEDS_BELOW_MIN = False
+```
 
-    This is number of scales (in one direction) that are allowed over the given time period before sending a notification.
+#### NOTIFY_IF_NEEDS_EXCEED_MAX
 
-* (v0.4) `NOTIFY_IF_SCALING_IS_TOO_RAPID_TIME_PERIOD_MINUTES` = 1
+Send a notification if scaling up is called for, but we're already at `MAX_DYNOS`. Defaults to:
 
-    This is the time period to evaluate the number of scales within.
+```python:
+NOTIFY_IF_NEEDS_EXCEED_MAX = True
+```
+
+#### NOTIFY_IF_SCALING_IS_TOO_RAPID
+
+(v0.4)  Notify if rapid scaling happens.  This setting is paired with the two below.  If the number of scales is larger than `NOTIFY_IF_SCALING_IS_TOO_RAPID_NUM_SCALES` over the past `NOTIFY_IF_SCALING_IS_TOO_RAPID_TIME_PERIOD_MINUTES`, a notification will be sent. Defaults to:
+```python:
+ NOTIFY_IF_SCALING_IS_TOO_RAPID = False
+ ```
+
+#### NOTIFY_IF_SCALING_IS_TOO_RAPID_NUM_SCALES
+
+(v0.4)  This is number of scales (in one direction) that are allowed over the given time period before sending a notification.. Defaults to:
+
+```python:
+#### NOTIFY_IF_SCALING_IS_TOO_RAPID_NUM_SCALES = 5
+```
+
+#### NOTIFY_IF_SCALING_IS_TOO_RAPID_TIME_PERIOD_MINUTES
+
+(v0.4)  This is the time period to evaluate the number of scales within.. Defaults to:
+
+```python:
+#### NOTIFY_IF_SCALING_IS_TOO_RAPID_TIME_PERIOD_MINUTES = 1
+```
 
 
 
 Notes
 -----
 
-Making a good measurement URL
-=============================
+### Making a good measurement URL
+
 
 The best measurement url will test against the bottlenecks your app is most likely to have as it scales up.  The bundled django app provides a url that hits the cache, database, and disk IO.  To make autoscale fit your app, you're best off writing a custom view that emulates your user's most common actions.
 
 
-Django's staticfiles gotcha, and some delightful side-effects of autoscale
-==========================================================================
+### Django's staticfiles gotcha, and some delightful side-effects of autoscale
 
 There's a truth about Heroku and all other cloud-based services:  If no traffic hits your dyno, they quietly shut it down until a request comes in.  Normally, that's not a big deal, but due to a confluence of staticfiles looking at the local filesystem for unique-filename caching, and heroku's read-only (ish) filesystem on dynos, the sanest way to handle static files on heroku is often with a Procfile like this:
 
