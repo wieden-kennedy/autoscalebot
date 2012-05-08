@@ -65,7 +65,7 @@ Usage
 How it works
 ------------
 
-Heroku-autoscale requests a heartbeat URL, and makes sure the response time is within the limits you've defined.  If it's outside those bounds enough times in a row, it scales up or down your app as needed.  Every part of that description is configurable via the settings.  Note that running heroku-autoscale will require one worker dyno, so if you're hobbying it and running one dyno most of the time, it won't save you any cash. It doesn't have to be run on heroku though - any internet-enabled computer will do.
+Heroku-autoscale requests a measurement URL, and makes sure the response time is within the limits you've defined.  If it's outside those bounds enough times in a row, it scales up or down your app as needed.  Every part of that description is configurable via the settings.  Note that running heroku-autoscale will require one worker dyno, so if you're hobbying it and running one dyno most of the time, it won't save you any cash. It doesn't have to be run on heroku though - any internet-enabled computer will do.
 
 
 Available settings
@@ -86,7 +86,7 @@ Heroku-autoscale has a bunch of settings, so you should be able to tune it for m
                 'SETTINGS': {
                     'MIN_TIME_MS': 500,
                     'MAX_TIME_MS': 1000,
-                    'HEARTBEAT_URL' = "/my-custom-heartbeat/"
+                    'HEARTBEAT_URL' = "/my-custom-measurement/"
                 }
             },
             'DECISION': {
@@ -138,7 +138,7 @@ Backends
 --------
 To allow for tuning to your app's particular needs, autoscale provides backends for load measurement, decision-making, and notification.  You can also write your own backend, by subclassing the base class of any of them.  Pull requests for additional backends are also welcome!
 
-There are four backends:  Measure, Interpret, Decide, Scale, and Notify.  Here's what they do:
+There are four backends:  Measure, Decide, Scale, and Notify.  Here's what they do:
 
 * Measure: finds out how loaded your app is.
 * Decide: decides whether to scale up, down, or stay steady based on recent measurements
@@ -147,17 +147,18 @@ There are four backends:  Measure, Interpret, Decide, Scale, and Notify.  Here's
 
 
 
-### Measurement backends
+Measurement backends
+====================
 
 These backends are responsible for querying, pinging, or otherwise measuring the responsiveness of an app. They return a dictionary with those results.
 
 The backends, with their possible settings and default values.
 
-* `ResponseTimeBackend`
+### ResponseTimeBackend
     
     Scales based on a set of response times for a given url.
 
-    * `MEASUREMENT_URL` = "/heroku-autoscale/heartbeat/"
+    * `MEASUREMENT_URL` = "/heroku-autoscale/measurement/"
     * `MEASUREMENT_INTERVAL_IN_SECONDS` = 30
 
     Returns:
@@ -169,13 +170,13 @@ The backends, with their possible settings and default values.
     }
     ```
 
-* `ServiceTimeBackend`
+### ServiceTimeBackend
 
-    Scales based on the internal service time of the last heartbeat response.
+    Scales based on the internal service time of the last measurement response.
 
     Settings: 
 
-    * `MEASUREMENT_URL` = "/heartbeat"
+    * `MEASUREMENT_URL` = "/measurement"
     * `MEASUREMENT_INTERVAL_IN_SECONDS` = 30
 
     Returns:
@@ -188,13 +189,13 @@ The backends, with their possible settings and default values.
     ```
 
 
-* `CeleryQueueSizeBackend`
+### CeleryQueueSizeBackend
 
     Scales based on the number of waiting Celery tasks.
 
     Settings: 
     
-    * `MEASUREMENT_URL` = "/heartbeat"
+    * `MEASUREMENT_URL` = "/measurement"
 
     Returns:
 
@@ -205,13 +206,13 @@ The backends, with their possible settings and default values.
     }
     ```
 
-* `AppDecisionBackend`
+### AppDecisionBackend
     
     Expects JSON data to be returned directly from a URL
 
     Settings
     
-    * `MEASUREMENT_URL` = "/heartbeat"
+    * `MEASUREMENT_URL` = "/measurement"
 
     Returns: 
 
@@ -228,12 +229,13 @@ The backends, with their possible settings and default values.
 
 
 
-### Decision Backends
+Decision Backends
+=================
 
-Decision backends decide when to scale and what to scale to, based on the most recent set of responses.
+Decision backends decide when to scale and what to scale to, based on the most recent set of responses.  There are two included backends, ConsecutiveThresholdBackend and AverageThresholdBackend.  Both share a common set of settings.
 
 
-##### Common settings
+### Common settings
 
 All decision backends have these settings:
 
@@ -280,7 +282,7 @@ All decision backends have these settings:
     * the number of seconds to wait after scaling before starting evaluation again. Defaults to `5`
 
 
-##### ConsecutiveThresholdBackend
+### ConsecutiveThresholdBackend
 
 If the number of consecutive responses are outside `MIN_MEASUREMENT_VALUE` or `MAX_MEASUREMENT_VALUE`, do the scale. Available settings:
 
@@ -294,7 +296,7 @@ If the number of consecutive responses are outside `MIN_MEASUREMENT_VALUE` or `M
 * `POST_SCALE_WAIT_TIME_SECONDS` = 5
 
 
-##### AverageThresholdBackend
+### AverageThresholdBackend
 
 If the average result over a given set is outside `MIN_MEASUREMENT_VALUE` or `MAX_MEASUREMENT_VALUE`, do the scale. Available settings:
 
@@ -308,11 +310,12 @@ If the average result over a given set is outside `MIN_MEASUREMENT_VALUE` or `MA
 
 
 
-### Scaling Backends
+Scaling Backends
+================
 
 Scaling backends actually do the scaling.  Right now, there's only a heroku backend, but pull requests for other paas stacks are welcome.  You can also subclass this backend to tie into your pupppet, chef, etc setup.
 
-##### HerokuScaleBackend
+### HerokuScaleBackend
 
 Scales heroku dynos. Requires two settings to be passed:
 
@@ -326,19 +329,20 @@ Scales heroku dynos. Requires two settings to be passed:
 
 
 
-### Notification Backends
+Notification Backends
+=====================
 
 Notification backends are there to let you know when scale ups, downs, or other interesting events happen.  Autoscale ships with a few, and pull requests for more are welcome.  All backends take the same setttings.
 
 
-Notification Backends:
+#### Notification Backends:
 
 * `ConsoleBackend`, which prints messages to the console, 
 * `DjangoEmailBackend`, which emails the `ADMINS` when used in a django project,
 * `LoggerBackend`, which sends messages to the python logger.
 * `TestBackend`, which adds messages to a list, and is used for unit testing.
 
-Notification Backend Settings:
+#### Notification Backend Settings:
 
 * `NOTIFY_ON_EVERY_MEASUREMENT` = False
     
@@ -370,22 +374,24 @@ Notification Backend Settings:
 
 
 
+Notes
+-----
 
-Making a good heartbeat URL
----------------------------
+Making a good measurement URL
+=============================
 
-The best heartbeat url will test against the bottlenecks your app is most likely to have as it scales up.  The bundled django app provides a url that hits the cache, database, and disk IO.  To make autoscale fit your app, you're best off writing a custom view that emulates your user's most common actions.
+The best measurement url will test against the bottlenecks your app is most likely to have as it scales up.  The bundled django app provides a url that hits the cache, database, and disk IO.  To make autoscale fit your app, you're best off writing a custom view that emulates your user's most common actions.
 
 
 Django's staticfiles gotcha, and some delightful side-effects of autoscale
-----------------------------------------------------------------------------
+==========================================================================
 
 There's a truth about Heroku and all other cloud-based services:  If no traffic hits your dyno, they quietly shut it down until a request comes in.  Normally, that's not a big deal, but due to a confluence of staticfiles looking at the local filesystem for unique-filename caching, and heroku's read-only (ish) filesystem on dynos, the sanest way to handle static files on heroku is often with a Procfile like this:
 
     web: project/manage.py collectstatic --noinput;python project/manage.py run_gunicorn -b "0.0.0.0:$PORT" --workers=4
 
 
-The problem, of course, is that once Heroku kills your dyno, the new one has to re-run collectstatic before it can serve the request - and that can take a while.  `django-heroku-autoscale`'s heartbeats have a very nice side effect: if you set them low enough (every couple minutes for small sites), and you're properly minimally sized, each dyno will get traffic, and Heroku will never kill them off.
+The problem, of course, is that once Heroku kills your dyno, the new one has to re-run collectstatic before it can serve the request - and that can take a while.  `django-heroku-autoscale`'s measurements have a very nice side effect: if you set them low enough (every couple minutes for small sites), and you're properly minimally sized, each dyno will get traffic, and Heroku will never kill them off.
 
 Roadmap 
 ------------------------------------
@@ -405,7 +411,7 @@ Huge update. This release splits scaling and load measurement into two new backe
 
 *0.2*
 
-* Better django integration includes a heartbeat url and view
+* Better django integration includes a measurement url and view
 * Time-based MAX and MIN settings
 * Notifications via NOTIFICATION_BACKENDS
 
