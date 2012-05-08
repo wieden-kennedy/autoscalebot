@@ -8,15 +8,8 @@ If you're using not django:
 ---------------------------
 
 1. ```pip install heroku-web-autoscale```, and add it to your `requirements.txt`
-
 2. Create a settings file somewhere in your `PYTHON_PATH`. We typically call it `autoscale_settings.py`, but you can call it whatever you like.
-3. Set these settings for your app, as well as any optional tuning settings. See autoscale_settings.py.dist for an example.
-
-    ```python
-    HEROKU_APP_NAME = "my-app-name"
-    HEROKU_API_KEY = "1234567890abcdef1234567890abcdef"
-    ```
-
+3. Set `AUTOSCALE_SETTINGS` settings for your app, as well as any optional tuning settings. See autoscale_settings.py.dist for an example.
 4. Add autoscale to your `Procfile`:
 
     ```
@@ -28,14 +21,7 @@ If you are using django:
 -----------------------
 
 1. ```pip install heroku-web-autoscale```, and add it to your `requirements.txt`
-
-2. Set these required settings in your `settings.py`, as well as any optional tuning settings.  Prefix all names on the settings list below with `AUTOSCALE_`
-
-    ```python
-    AUTOSCALE_HEROKU_APP_NAME = "my-app-name"
-    AUTOSCALE_HEROKU_API_KEY = "1234567890abcdef1234567890abcdef"
-    ```
-
+2. Set `AUTOSCALE_SETTINGS` in your `settings.py`, as well as any optional tuning settings.  Prefix all names on the settings list below with `AUTOSCALE_`
 3. If you want the built-in test view:
 
     settings.py: 
@@ -74,7 +60,7 @@ Available settings
 Heroku-autoscale has a bunch of settings, so you should be able to tune it for most needs.  The settings allow for a choice and configuration of measurement, decision, scale, and notification backends. Below is an example handling scaling for web and celery dynos.  See below for detailed backend documentation.
 
 ```python
-AUTOSCALE_BACKENDS = {
+AUTOSCALE_SETTINGS = {
     'web': {
         'MEASUREMENT': {
             'BACKEND': 'heroku_web_autoscale.backends.measurement.ResponseTimeBackend',
@@ -201,9 +187,7 @@ Scales based on the number of waiting Celery tasks.
 Settings: 
 
 ```python
-{
-    'MEASUREMENT_URL' : "/measurement"
-}
+None
 ```
 
 Returns:
@@ -290,7 +274,7 @@ TIME_ZONE = 'America/Vancouver'
 
 #### INCREMENT
 
-The number of dynos to add or remove on scaling. Defaults to `1`. Defaults to:
+The number of dynos to add or remove on scaling.  Defaults to:
 
 ```python
 'INCREMENT': 1
@@ -306,7 +290,7 @@ The number of seconds to wait after scaling before starting evaluation again. De
 
 ### ConsecutiveThresholdBackend
 
-If the number of consecutive responses are outside `MIN_MEASUREMENT_VALUE` or `MAX_MEASUREMENT_VALUE`, do the scale. Available settings (and their defaults):
+If the number of consecutive responses for pass or fail are outside `MIN_MEASUREMENT_VALUE` or `MAX_MEASUREMENT_VALUE`, do the scale. Available settings (and their defaults):
 
 ```python
 {
@@ -414,7 +398,7 @@ NOTIFY_IF_NEEDS_EXCEED_MAX = True
 (v0.4)  This is number of scales (in one direction) that are allowed over the given time period before sending a notification.. Defaults to:
 
 ```python:
-#### NOTIFY_IF_SCALING_IS_TOO_RAPID_NUM_SCALES = 5
+NOTIFY_IF_SCALING_IS_TOO_RAPID_NUM_SCALES = 5
 ```
 
 #### NOTIFY_IF_SCALING_IS_TOO_RAPID_TIME_PERIOD_MINUTES
@@ -422,7 +406,7 @@ NOTIFY_IF_NEEDS_EXCEED_MAX = True
 (v0.4)  This is the time period to evaluate the number of scales within.. Defaults to:
 
 ```python:
-#### NOTIFY_IF_SCALING_IS_TOO_RAPID_TIME_PERIOD_MINUTES = 1
+NOTIFY_IF_SCALING_IS_TOO_RAPID_TIME_PERIOD_MINUTES = 1
 ```
 
 
