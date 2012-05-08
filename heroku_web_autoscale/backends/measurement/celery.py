@@ -1,7 +1,8 @@
-from base import TOO_LOW, TOO_HIGH, JUST_RIGHT, logger
+from heroku_web_autoscale.backends.measurement.base import BaseMeasurementBackend
+from heroku_web_autoscale.logger import logger
 from celery.events.snapshot import Polaroid
 from celery.events.state import State
-from heroku_web_autoscale.backends.measurement.base import BaseMeasurementBackend
+
 
 class Camera(Polaroid):
     pass

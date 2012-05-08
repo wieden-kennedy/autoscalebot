@@ -155,6 +155,7 @@ Returns:
 {
     'backend': 'ResponseTimeBackend',
     'data': 350, // ms
+    'success': True,  // assuming it was
 }
 ```
 
@@ -177,6 +178,7 @@ Returns:
 {
     'backend': 'ServiceTimeBackend',
     'data': 350, // ms
+    'success': True,  // assuming it was
 }
 ```
 
@@ -197,6 +199,7 @@ Returns:
 {
     'backend': 'CeleryRedisQueueSizeBackend',
     'data': 15, // tasks in queue
+    'success': True,  // assuming it was
 }
 ```
 
@@ -221,7 +224,8 @@ Returns:
     'data': {
         'my_custom_key': 'my_val',
         'another_key': 'another_val'
-    }
+    },
+    'success': True,  // assuming it was
 }
 ```
 
