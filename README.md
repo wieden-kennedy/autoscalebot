@@ -71,12 +71,7 @@ Heroku-autoscale requests a measurement URL, and makes sure the response time is
 Available settings
 -------------------
 
-Heroku-autoscale has a bunch of settings, so you should be able to tune it for most needs.
-
-
-* `AUTOSCALE_BACKENDS`
-
-    This is the heart of autoscale's configuration.  It allows for a choice and configuration of measurement, decision, and notification backends. Below is an example, handling scaling for web and celery dynos.  See below for detailed backend documentation.
+Heroku-autoscale has a bunch of settings, so you should be able to tune it for most needs.  The settings allow for a choice and configuration of measurement, decision, scale, and notification backends. Below is an example handling scaling for web and celery dynos.  See below for detailed backend documentation.
 
     ```python
     AUTOSCALE_BACKENDS = {
@@ -156,76 +151,93 @@ The backends, with their possible settings and default values.
 
 ### ResponseTimeBackend
     
-    Scales based on a set of response times for a given url.
+Scales based on a set of response times for a given url.
 
-    * `MEASUREMENT_URL` = "/heroku-autoscale/measurement/"
-    * `MEASUREMENT_INTERVAL_IN_SECONDS` = 30
+Settings: 
 
-    Returns:
+```python
+{
+    'MEASUREMENT_URL': "/heroku-autoscale/measurement/",
+    'MEASUREMENT_INTERVAL_IN_SECONDS': 30
+}
+```
 
-    ```python
-    {
-        'backend': 'ResponseTimeBackend',
-        'data': 350, // ms
-    }
-    ```
+Returns:
+
+```python
+{
+    'backend': 'ResponseTimeBackend',
+    'data': 350, // ms
+}
+```
 
 ### ServiceTimeBackend
 
-    Scales based on the internal service time of the last measurement response.
+Scales based on the internal service time of the last measurement response.
 
-    Settings: 
+Settings: 
 
-    * `MEASUREMENT_URL` = "/measurement"
-    * `MEASUREMENT_INTERVAL_IN_SECONDS` = 30
+```python
+{
+    'MEASUREMENT_URL' : "/measurement",
+    'MEASUREMENT_INTERVAL_IN_SECONDS' : 30
+}
+```
 
-    Returns:
+Returns:
 
-    ```python
-    {
-        'backend': 'ServiceTimeBackend',
-        'data': 350, // ms
-    }
-    ```
+```python
+{
+    'backend': 'ServiceTimeBackend',
+    'data': 350, // ms
+}
+```
 
 
 ### CeleryQueueSizeBackend
 
-    Scales based on the number of waiting Celery tasks.
+Scales based on the number of waiting Celery tasks.
 
-    Settings: 
-    
-    * `MEASUREMENT_URL` = "/measurement"
+Settings: 
 
-    Returns:
+```python
+{
+    'MEASUREMENT_URL' : "/measurement"
+}
+```
 
-    ```python
-    {
-        'backend': 'CeleryQueueSizeBackend',
-        'data': 15, // tasks in queue
-    }
-    ```
+Returns:
+
+```python
+{
+    'backend': 'CeleryQueueSizeBackend',
+    'data': 15, // tasks in queue
+}
+```
 
 ### AppDecisionBackend
-    
-    Expects JSON data to be returned directly from a URL
 
-    Settings
-    
-    * `MEASUREMENT_URL` = "/measurement"
+Expects JSON data to be returned directly from a URL
 
-    Returns: 
+Settings:
 
-    
-    ```python
-    {
-        'backend': 'CeleryQueueSizeBackend',
-        'data': {
-            'my_custom_key': 'my_val',
-            'another_key': 'another_val'
-        }
+```python
+{
+    'MEASUREMENT_URL' : "/measurement"
+}
+
+Returns: 
+
+
+```python
+{
+    'backend': 'CeleryQueueSizeBackend',
+    'data': {
+        'my_custom_key': 'my_val',
+        'another_key': 'another_val'
     }
-    ```
+}
+```
 
 
 
@@ -239,75 +251,90 @@ Decision backends decide when to scale and what to scale to, based on the most r
 
 All decision backends have these settings:
 
-* `MIN_DYNOS` 
+#### MIN_DYNOS
 
-    * the absolute minimum number of dynos. Default to `1`. This value is either an integer, or a dictionary of time/max pairs. E.g.
+The absolute minimum number of dynos. Default to `1`. This value is either an integer, or a dictionary of time/max pairs. E.g.
 
-        ```python
-        # sets the absolute min as 2 dynos
-        MIN_DYNOS = 2
+```python
+# sets the absolute min as 2 dynos
+MIN_DYNOS = 2
 
-        # Sets the min as 3 dynos from 8am-6pm local time, and 1 dyno otherwise.
-        MIN_DYNOS = {
-            "0:00": 1,
-            "8:00": 3,
-            "18:00": 1
-        }
-        ```
+# Sets the min as 3 dynos from 8am-6pm local time, and 1 dyno otherwise.
+MIN_DYNOS = {
+    "0:00": 1,
+    "8:00": 3,
+    "18:00": 1
+}
+```
 
-* `MAX_DYNOS` 
+#### MAX_DYNOS
 
-    * the absolute maximum number of dynos. Default to `3`. This value is either an integer, or a dictionary of time/max pairs.  E.g.
+The absolute maximum number of dynos. Default to `3`. This value is either an integer, or a dictionary of time/max pairs.  E.g.
 
-        ```python
-        # sets the absolute max as 5 dynos
-        MAX_DYNOS = 5
+```python
+# sets the absolute max as 5 dynos
+MAX_DYNOS = 5
 
-        # Sets the max as 5 dynos from 9am-5pm local time, and 2 dynos otherwise.
-        MAX_DYNOS = {
-            "0:00": 2,
-            "9:00": 5,
-            "17:00": 2
-        }
+# Sets the max as 5 dynos from 9am-5pm local time, and 2 dynos otherwise.
+MAX_DYNOS = {
+    "0:00": 2,
+    "9:00": 5,
+    "17:00": 2
+}
 
-        # If you're using time-based settings, don't forget to set your time zone.  For django, that's:
-        TIME_ZONE = 'America/Vancouver'
-        ```
+# If you're using time-based settings, don't forget to set your time zone.  For django, that's:
+TIME_ZONE = 'America/Vancouver'
+```
 
 
-* `INCREMENT` 
-    * the number of dynos to add or remove on scaling. Defaults to `1`.
+#### INCREMENT
 
-* `POST_SCALE_WAIT_TIME_SECONDS`
-    * the number of seconds to wait after scaling before starting evaluation again. Defaults to `5`
+The number of dynos to add or remove on scaling. Defaults to `1`. Defaults to:
 
+```python
+'INCREMENT': 1
+```
+
+#### POST_SCALE_WAIT_TIME_SECONDS
+
+The number of seconds to wait after scaling before starting evaluation again. Defaults to:
+
+```python
+'POST_SCALE_WAIT_TIME_SECONDS': 5
+```
 
 ### ConsecutiveThresholdBackend
 
-If the number of consecutive responses are outside `MIN_MEASUREMENT_VALUE` or `MAX_MEASUREMENT_VALUE`, do the scale. Available settings:
+If the number of consecutive responses are outside `MIN_MEASUREMENT_VALUE` or `MAX_MEASUREMENT_VALUE`, do the scale. Available settings (and their defaults):
 
-* `NUMBER_OF_FAILS_TO_SCALE_UP_AFTER` = 3
-* `NUMBER_OF_PASSES_TO_SCALE_DOWN_AFTER` = 5
-* `MIN_MEASUREMENT_VALUE` = 400
-* `MAX_MEASUREMENT_VALUE` = 1200
-* `MIN_DYNOS` = 1
-* `MAX_DYNOS` = 3
-* `INCREMENT` = 1
-* `POST_SCALE_WAIT_TIME_SECONDS` = 5
-
+```python
+{
+    'NUMBER_OF_FAILS_TO_SCALE_UP_AFTER': 3,
+    'NUMBER_OF_PASSES_TO_SCALE_DOWN_AFTER': 5,
+    'MIN_MEASUREMENT_VALUE': 400,
+    'MAX_MEASUREMENT_VALUE': 1200,
+    'MIN_DYNOS': 1,
+    'MAX_DYNOS': 3,
+    'INCREMENT': 1,
+    'POST_SCALE_WAIT_TIME_SECONDS': 5,
+}
+```
 
 ### AverageThresholdBackend
 
-If the average result over a given set is outside `MIN_MEASUREMENT_VALUE` or `MAX_MEASUREMENT_VALUE`, do the scale. Available settings:
+If the average result over a given set is outside `MIN_MEASUREMENT_VALUE` or `MAX_MEASUREMENT_VALUE`, do the scale. Available settings (and their defaults):
 
-* `NUMBER_OF_MEASUREMENTS_TO_AVERAGE` = 3
-* `MIN_MEASUREMENT_VALUE` = 0
-* `MAX_MEASUREMENT_VALUE` = 20
-* `MIN_DYNOS` = 1
-* `MAX_DYNOS` = 3
-* `INCREMENT` = 1
-* `POST_SCALE_WAIT_TIME_SECONDS` = 5
-
+```python
+{
+    'NUMBER_OF_MEASUREMENTS_TO_AVERAGE': 3,
+    'MIN_MEASUREMENT_VALUE': 0,
+    'MAX_MEASUREMENT_VALUE': 20,
+    'MIN_DYNOS': 1,
+    'MAX_DYNOS': 3,
+    'INCREMENT': 1,
+    'POST_SCALE_WAIT_TIME_SECONDS': 5,
+}
+```
 
 
 Scaling Backends
@@ -319,15 +346,12 @@ Scaling backends actually do the scaling.  Right now, there's only a heroku back
 
 Scales heroku dynos. Requires two settings to be passed:
 
-* `APP_NAME` 
-    
-    * *Required*.  The name of your app, ie "dancing-forest-1234".
-
-* `API_KEY`
-    
-    * *Required*. Your API key - you can get it on your [account page](https://api.heroku.com/account).
-
-
+```python
+{
+    'APP_NAME': 'dancing-forest-1234',              // The name of your app in heroku, ie "dancing-forest-1234".
+    'API_KEY': '1234567890abcdef1234567890abcdef',  // Your API key - you can get it on your [account page](https://api.heroku.com/account). 
+}
+```
 
 Notification Backends
 =====================
