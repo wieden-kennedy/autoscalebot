@@ -21,7 +21,7 @@ If you are using django:
 -----------------------
 
 1. ```pip install heroku-web-autoscale```, and add it to your `requirements.txt`
-2. Set `AUTOSCALE_SETTINGS` in your `settings.py`, as well as any optional tuning settings.  Prefix all names on the settings list below with `AUTOSCALE_`
+2. Set `AUTOSCALE_SETTINGS` in your `settings.py`, as well as any optional tuning settings.
 3. If you want the built-in test view:
 
     settings.py: 
@@ -67,7 +67,8 @@ AUTOSCALE_SETTINGS = {
             'SETTINGS': {
                 'MIN_TIME_MS': 500,
                 'MAX_TIME_MS': 1000,
-                'HEARTBEAT_URL' = "/my-custom-measurement/"
+                'MEASUREMENT_URL' = "/my-custom-measurement/",
+                'MEASUREMENT_INTERVAL_IN_SECONDS': 30,
             }
         },
         'DECISION': {
@@ -93,7 +94,7 @@ AUTOSCALE_SETTINGS = {
     },
     'celery': {
         'MEASUREMENT': {
-            'BACKEND': 'heroku_web_autoscale.backends.measurement.CeleryQueueSizeBackend',
+            'BACKEND': 'heroku_web_autoscale.backends.measurement.CeleryRedisQueueSizeBackend',
         },
         'DECISION': {
             'BACKEND': 'heroku_web_autoscale.backends.decision.AverageThresholdBackend',
@@ -180,21 +181,21 @@ Returns:
 ```
 
 
-### CeleryQueueSizeBackend
+### CeleryRedisQueueSizeBackend
 
 Scales based on the number of waiting Celery tasks.
 
 Settings: 
 
 ```python
-None
+   'QUEUE_NAME' : "celery"
 ```
 
 Returns:
 
 ```python
 {
-    'backend': 'CeleryQueueSizeBackend',
+    'backend': 'CeleryRedisQueueSizeBackend',
     'data': 15, // tasks in queue
 }
 ```
@@ -216,7 +217,7 @@ Returns:
 
 ```python
 {
-    'backend': 'CeleryQueueSizeBackend',
+    'backend': 'AppDecisionBackend',
     'data': {
         'my_custom_key': 'my_val',
         'another_key': 'another_val'

@@ -1,7 +1,7 @@
 from heroku_web_autoscale import TOO_LOW, JUST_RIGHT, TOO_HIGH
 from heroku_web_autoscale.logger import logger
 
-from heroku_web_autoscale.backends.measurement import BaseMeasurementBackend
+from heroku_web_autoscale.backends.measurement.base import BaseMeasurementBackend
 
 
 class ResponseTimeBackend(BaseMeasurementBackend):
