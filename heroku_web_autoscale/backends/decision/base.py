@@ -19,8 +19,9 @@ class BaseDecisionBackend(BaseBackend):
 
     MIN_PROCESSES, which defaults to 1,
     MAX_PROCESSES, which defaults to 3,
-    INCREMENT, which defaults to 1, and
-    POST_SCALE_WAIT_TIME_SECONDS, which defaults to 5.
+    INCREMENT, which defaults to 1,
+    POST_SCALE_WAIT_TIME_SECONDS, which defaults to 5, and
+    HISTORY_LENGTH, which defaults to 10.
 
     It returns an integer.
 

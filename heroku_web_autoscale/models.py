@@ -52,8 +52,8 @@ class AutoscaleBot(object):
     def add_to_history(self, result):
         self.results.append(result)
 
-        if len(self.results) > self.settings.HISTORY_LENGTH:
-            self.results = self.results[-1 * self.settings.HISTORY_LENGTH:]
+        if len(self.results) > self.settings.DECISION.HISTORY_LENGTH:
+            self.results = self.results[-1 * self.settings.DECISION.HISTORY_LENGTH:]
 
     def heartbeat_and_wait(self, *args, **kwargs):
         # Tell the backends we're starting another heartbeat (clear cached vars, etc)
