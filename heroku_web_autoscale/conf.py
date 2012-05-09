@@ -1,7 +1,7 @@
 class AutoscaleSettings:
 
     def _set_attr_from_settings(self, key_name, default=None):
-        setattr(self, key_name, getattr(self.settings, "%s%s" % (self.prefix, key_name), default))
+        setattr(self, key_name, getattr(self.settings, key_name, default))
 
     def initialize_settings(self):
         for k, v in self.SETTINGS_AND_DEFAULTS.iteritems():
@@ -9,9 +9,6 @@ class AutoscaleSettings:
 
     def __init__(self, settings=None, in_django=False):
         self.in_django = in_django
-        self.prefix = ""
-        if self.in_django:
-            self.prefix = "AUTOSCALE_"
         self.settings = settings
 
         self.SETTINGS_AND_DEFAULTS = {

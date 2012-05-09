@@ -1,4 +1,6 @@
-heroku-web-autoscale has one simple aim: to make scaling heroku web processes something you can stop worrying about.  It also integrates nicely with django.
+heroku-web-autoscale has one simple aim: to make scaling paas processes something you can stop worrying about.  It autoscales heroku, both web and workers. It autoscales celery. It's easy to subclass, so you can hook into other paas platforms (and send us pull requests!)  It's super-flexible, simple, and smart. 
+
+It also integrates nicely with django.  It's made our lives much easier, and hopefully it can do the same for you.
 
 
 Installing
@@ -10,7 +12,7 @@ If you're using not django:
 1. ```pip install heroku-web-autoscale```, and add it to your `requirements.txt`
 2. Create a settings file somewhere in your `PYTHON_PATH`. We typically call it `autoscale_settings.py`, but you can call it whatever you like.
 3. Set `AUTOSCALE_SETTINGS` settings for your app, as well as any optional tuning settings. See autoscale_settings.py.dist for an example.
-4. Add autoscale to your `Procfile`:
+4. Fire off this command: `heroku_web_autoscaler --settings=autoscale_settings`.  If you're on heroku, you'll want to add this to your `Procfile`:
 
     ```
     autoscaleworker: heroku_web_autoscaler --settings=autoscale_settings
@@ -38,7 +40,7 @@ If you are using django:
     )
     ```
 
-4. Add it to your Procfile:
+4. Fire up this command, or add it to your Procfile:
 
     ```
     autoscaleworker: project/manage.py heroku_web_autoscaler
@@ -51,13 +53,24 @@ Usage
 How it works
 ------------
 
-Heroku-autoscale requests a measurement URL, and makes sure the response time is within the limits you've defined.  If it's outside those bounds enough times in a row, it scales up or down your app as needed.  Every part of that description is configurable via the settings.  Note that running heroku-autoscale will require one worker dyno, so if you're hobbying it and running one dyno most of the time, it won't save you any cash. It doesn't have to be run on heroku though - any internet-enabled computer will do.
+Broadly, heroku-autoscale does the following actions periodically:
+
+1. Measures to see how loaded your app is,
+2. Decides whether to scale up, down, or stay steady based on recent measurements,
+3. Scales, and
+4. Notifies administrators.
+
+Each of those steps is fully configurable, and it ships with a pretty reasonable set of defaults.  Out of the box, if you're using django, it'll just work.  If you're not using django, all you need to specify a measurement URL, and the default backends will be ready to roll.
+
+If you're looking to tweak that default behavior, add support for worker threads, or overhaul it entirely, you'll want to add some settings.
 
 
 Available settings
 -------------------
 
-Heroku-autoscale has a bunch of settings, so you should be able to tune it for most needs.  The settings allow for a choice and configuration of measurement, decision, scale, and notification backends. Below is an example handling scaling for web and celery processes.  See below for detailed backend documentation.
+The autoscale settings allow for choice and configuration of the measurement, decision, scale, and notification backends.  All of the backends are documented in detail below. `AUTOSCALE_SETTINGS` is formatted as a dictionary of process name/setting pairs.
+
+The example below shows appropriate settings for handling scaling for web and celery processes on heroku. 
 
 ```python
 AUTOSCALE_SETTINGS = {
@@ -118,7 +131,7 @@ AUTOSCALE_SETTINGS = {
 
 Backends
 --------
-To allow for tuning to your app's particular needs, autoscale provides backends for load measurement, decision-making, and notification.  You can also write your own backend, by subclassing the base class of any of them.  Pull requests for additional backends are also welcome!
+To allow for tuning to your app's particular needs, heroku-autoscale provides backends for load measurement, decision-making, and notification.  You can also write your own backend, by subclassing the base class of any of them.  Pull requests for additional backends are also welcome!
 
 There are four backends:  Measure, Decide, Scale, and Notify.  Here's what they do:
 
@@ -128,7 +141,7 @@ There are four backends:  Measure, Decide, Scale, and Notify.  Here's what they 
 * Notify: informs administrators.
 
 
-Generally, each backend type is built around a base class.  That class includes hoosk for setup, teardown, and heartbeat_start (a run before each call).  
+Generally, each backend type is built around a base class.  That class includes hooks for setup, teardown, and heartbeat_start (run before each call).  
 
 
 Measurement backends
@@ -242,9 +255,9 @@ Decision Backends
 Decision backends decide when to scale and what to scale to, based on the most recent set of responses.  There are two included backends, ConsecutiveThresholdBackend and AverageThresholdBackend.  Both share a common set of settings.
 
 
-### Common settings
+### BaseDecisionBackend
 
-All decision backends have these settings:
+The base class (and all other included backends) have these settings:
 
 #### MIN_PROCESSES
 
@@ -440,7 +453,7 @@ The best measurement url will test against the bottlenecks your app is most like
 
 ### Django's staticfiles gotcha, and some delightful side-effects of autoscale
 
-There's a truth about Heroku and all other cloud-based services:  If no traffic hits your dyno, they quietly shut it down until a request comes in.  Normally, that's not a big deal, but due to a confluence of staticfiles looking at the local filesystem for unique-filename caching, and heroku's read-only (ish) filesystem on processes, the sanest way to handle static files on heroku is often with a Procfile like this:
+There's a truth about Heroku and probably all smart cloud-based services:  If no traffic hits your instance, they quietly shut it down until a request comes in.  Normally, that's not a big deal, but due to a confluence of staticfiles looking at the local filesystem for unique-filename caching, and heroku's read-only (ish) filesystem on processes, the sanest way to handle static files on heroku is often with a Procfile like this:
 
     web: project/manage.py collectstatic --noinput;python project/manage.py run_gunicorn -b "0.0.0.0:$PORT" --workers=4
 
