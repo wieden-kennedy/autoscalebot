@@ -14,8 +14,14 @@ class BaseMeasurementBackend(object):
     }
 
     """
-    def __init__(self, *args, **kwargs):
+    def __init__(self, autoscalebot, *args, **kwargs):
         pass
+
+    def setup(self, *args, **kwargs):
+        super(BaseMeasurementBackend, self).setup(*args, **kwargs)
+
+    def teardown(self, *args, **kwargs):
+        super(BaseMeasurementBackend, self).teardown(*args, **kwargs)
 
     def measure(self, *args, **kwargs):
         raise NotYetImplementedException

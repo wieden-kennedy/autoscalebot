@@ -190,7 +190,9 @@ Scales based on the number of waiting Celery tasks.
 Settings: 
 
 ```python
-   'QUEUE_NAME' : "celery"
+   'MEASUREMENT_INTERVAL_IN_SECONDS': 30,
+   'QUEUE_NAME' : "celery",
+
 ```
 
 Returns:
@@ -211,6 +213,7 @@ Settings:
 
 ```python
 {
+    'MEASUREMENT_INTERVAL_IN_SECONDS': 30,
     'MEASUREMENT_URL' : "/measurement"
 }
 ```
@@ -291,6 +294,14 @@ The number of seconds to wait after scaling before starting evaluation again. De
 
 ```python
 'POST_SCALE_WAIT_TIME_SECONDS': 5
+```
+
+#### HISTORY_LENGTH
+
+The number of results to keep in history.  Defaults to:
+
+```python
+'HISTORY_LENGTH': 10
 ```
 
 ### ConsecutiveThresholdBackend

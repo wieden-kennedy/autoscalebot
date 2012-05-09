@@ -37,9 +37,9 @@ class DjangoEmailBackend(NotificationBackend):
         self.send_notification(message=msg, subject=subject)
         return msg
 
-    def ping_complete(self, time, result, *args, **kwargs):
-        """Display the results of a ping"""
-        msg = "Ping: %sms, %s" % (time, result)
+    def measurement_complete(self, time, result, *args, **kwargs):
+        """Display the results of a measurement"""
+        msg = "Measurement: %sms, %s" % (time, result)
         subject = msg
         self.send_notification(message=msg, subject=subject)
         return msg

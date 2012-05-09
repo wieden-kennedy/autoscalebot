@@ -1,21 +1,17 @@
-from time import sleep
-
-from heroku_web_autoscale import MissingParameter
 from heroku_web_autoscale.conf import AutoscaleSettings
-from heroku_web_autoscale.models import HerokuAutoscaler
+from heroku_web_autoscale.models import AutoscaleBot
 
 
 def start_autoscaler(settings=None, in_django=False):
     settings = AutoscaleSettings(settings=settings, in_django=in_django)
-    autoscale = HerokuAutoscaler(settings)
+
+    bots = []
+    for process_name, process in settings:
+        bots.append(AutoscaleBot(process_name, settings))
 
     try:
-        assert settings.HEARTBEAT_INTERVAL_IN_SECONDS is not None
+        for bot in bots:
+            bot.bring_to_life()
     except:
-        raise MissingParameter("HEARTBEAT_INTERVAL_IN_SECONDS not set.")
-
-    while True:
-        last_heartbeat_time_in_seconds = autoscale.full_heartbeat() / 1000
-        next_interval = settings.HEARTBEAT_INTERVAL_IN_SECONDS - last_heartbeat_time_in_seconds
-        if next_interval > 0:
-            sleep(next_interval)
+        for bot in bots:
+            bot.rest_in_peace()

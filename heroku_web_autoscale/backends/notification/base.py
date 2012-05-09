@@ -4,9 +4,15 @@ class NotImplementedError(Exception):
 
 class NotificationBackend(object):
 
-    def __init__(self, autoscaler, *args, **kwargs):
+    def __init__(self, autoscalebot, *args, **kwargs):
         """Sets the autoscaler object, to be used in notifications"""
         self.autoscaler = autoscaler
+
+    def setup(self, *args, **kwargs):
+        super(NotificationBackend, self).setup(*args, **kwargs)
+
+    def teardown(self, *args, **kwargs):
+        super(NotificationBackend, self).teardown(*args, **kwargs)
 
     def send_notification(self, message=None, *args, **kwargs):
         """Send the notification.  By default, you'll have a message."""
