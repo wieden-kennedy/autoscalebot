@@ -1,12 +1,6 @@
 from heroku_web_autoscale.backends.measurement.base import BaseMeasurementBackend
 from heroku_web_autoscale.logger import logger
-from celery.events.snapshot import Polaroid
-from celery.events.state import State
-from heroku_web_autoscale import NotYetImplementedException
-
-
-class Camera(Polaroid):
-    pass
+import redis
 
 
 class CeleryRedisQueueSizeBackend(BaseMeasurementBackend):
@@ -19,6 +13,7 @@ class CeleryRedisQueueSizeBackend(BaseMeasurementBackend):
 
     queue_name, which defaults to "celery",
     host, which defaults to "localhost",
+    port, which defaults to "6379",
     database_number, which defaults to "0"
 
     It returns a dictionary, with the following format:
@@ -33,6 +28,7 @@ class CeleryRedisQueueSizeBackend(BaseMeasurementBackend):
         super(CeleryRedisQueueSizeBackend, self).__init__(*args, **kwargs)
         self.queue_name = kwargs.get("queue_name", "celery")
         self.host = kwargs.get("host", "localhost")
+        self.port = kwargs.get("port", "localhost")
         self.database_number = kwargs.get("database_number", 0)
         self.max_response_time_in_seconds = kwargs.get("max_response_time_in_seconds", 30)
 
@@ -41,11 +37,10 @@ class CeleryRedisQueueSizeBackend(BaseMeasurementBackend):
         size = 0
 
         try:
-            # Go run the CLI, or otherwise connect and check the queue size
-            # set size to that number
-            raise NotYetImplementedException
-
-        except:  # probably URLError, but anything counts.
+            r = redis.StrictRedis(host=self.host, port=self.port, db=self.database_number)
+            size = r.llen(self.queue_name)
+            r.disconnect()
+        except:
             success = False
 
         if success:
