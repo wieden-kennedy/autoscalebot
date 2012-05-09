@@ -11,6 +11,10 @@ class HerokuScalingBackend(BaseScalingBackend):
         self.settings = self.autoscalebot.settings.SCALING
         self.process_name = self.autoscalebot.process_name
 
+    def heartbeat_start(self, *args, **kwargs):
+        super(HerokuScalingBackend, self).heartbeat_start(*args, **kwargs)
+        self._num_processes = None
+
     @property
     def heroku_app(self):
         if not hasattr(self, "_heroku_app"):
@@ -26,5 +30,7 @@ class HerokuScalingBackend(BaseScalingBackend):
         except:
             self.notification("notify_scale_failed")
 
-    def get_num_instances(self):
-        return len([1 for i in self.heroku_app.processes[self.process_name]])
+    def get_num_processes(self):
+        if not hasattr(self, "_num_processes") or not self._num_processes:
+            self._num_processes = len([1 for i in self.heroku_app.processes[self.process_name]])
+        return self._num_processes

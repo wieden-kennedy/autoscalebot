@@ -23,5 +23,8 @@ class BaseMeasurementBackend(object):
     def teardown(self, *args, **kwargs):
         super(BaseMeasurementBackend, self).teardown(*args, **kwargs)
 
+    def heartbeat_start(self, *args, **kwargs):
+        super(BaseMeasurementBackend, self).heartbeat_start(*args, **kwargs)
+
     def measure(self, *args, **kwargs):
         raise NotYetImplementedException

@@ -56,8 +56,17 @@ class AutoscaleBot(object):
             self.results = self.results[-1 * self.settings.HISTORY_LENGTH:]
 
     def heartbeat_and_wait(self, *args, **kwargs):
+        # Tell the backends we're starting another heartbeat (clear cached vars, etc)
+        self.measurement_backend.heartbeat_start()
+        self.decision_backend.heartbeat_start()
+        self.scaling_backend.heartbeat_start()
+        [b.heartbeat_start() for b in self.notification_backends]
+
         r = self.get_measurement()
         self.add_to_history(r)
+
+
+
         num = self.get_num_of_processes_to_scale_to()
         did_scale = self.scaling_backend.scale_to(num)
         sleep_time = self.settings.MEASUREMENT.INTERVAL_IN_SECONDS

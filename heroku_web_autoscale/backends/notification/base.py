@@ -14,6 +14,9 @@ class NotificationBackend(object):
     def teardown(self, *args, **kwargs):
         super(NotificationBackend, self).teardown(*args, **kwargs)
 
+    def heartbeat_start(self, *args, **kwargs):
+        super(NotificationBackend, self).heartbeat_start(*args, **kwargs)
+
     def send_notification(self, message=None, *args, **kwargs):
         """Send the notification.  By default, you'll have a message."""
         raise NotImplementedError

@@ -1,4 +1,4 @@
-heroku-web-autoscale has one simple aim: to make scaling heroku web dynos something you can stop worrying about.  It also integrates nicely with django.
+heroku-web-autoscale has one simple aim: to make scaling heroku web processes something you can stop worrying about.  It also integrates nicely with django.
 
 
 Installing
@@ -57,7 +57,7 @@ Heroku-autoscale requests a measurement URL, and makes sure the response time is
 Available settings
 -------------------
 
-Heroku-autoscale has a bunch of settings, so you should be able to tune it for most needs.  The settings allow for a choice and configuration of measurement, decision, scale, and notification backends. Below is an example handling scaling for web and celery dynos.  See below for detailed backend documentation.
+Heroku-autoscale has a bunch of settings, so you should be able to tune it for most needs.  The settings allow for a choice and configuration of measurement, decision, scale, and notification backends. Below is an example handling scaling for web and celery processes.  See below for detailed backend documentation.
 
 ```python
 AUTOSCALE_SETTINGS = {
@@ -127,6 +127,8 @@ There are four backends:  Measure, Decide, Scale, and Notify.  Here's what they 
 * Scale: performs the scale
 * Notify: informs administrators.
 
+
+Generally, each backend type is built around a base class.  That class includes hoosk for setup, teardown, and heartbeat_start (a run before each call).  
 
 
 Measurement backends
@@ -244,32 +246,32 @@ Decision backends decide when to scale and what to scale to, based on the most r
 
 All decision backends have these settings:
 
-#### MIN_DYNOS
+#### MIN_PROCESSES
 
-The absolute minimum number of dynos. Default to `1`. This value is either an integer, or a dictionary of time/max pairs. E.g.
+The absolute minimum number of processes. Default to `1`. This value is either an integer, or a dictionary of time/max pairs. E.g.
 
 ```python
-# sets the absolute min as 2 dynos
-MIN_DYNOS = 2
+# sets the absolute min as 2 processes
+MIN_PROCESSES = 2
 
-# Sets the min as 3 dynos from 8am-6pm local time, and 1 dyno otherwise.
-MIN_DYNOS = {
+# Sets the min as 3 processes from 8am-6pm local time, and 1 dyno otherwise.
+MIN_PROCESSES = {
     "0:00": 1,
     "8:00": 3,
     "18:00": 1
 }
 ```
 
-#### MAX_DYNOS
+#### MAX_PROCESSES
 
-The absolute maximum number of dynos. Default to `3`. This value is either an integer, or a dictionary of time/max pairs.  E.g.
+The absolute maximum number of processes. Default to `3`. This value is either an integer, or a dictionary of time/max pairs.  E.g.
 
 ```python
-# sets the absolute max as 5 dynos
-MAX_DYNOS = 5
+# sets the absolute max as 5 processes
+MAX_PROCESSES = 5
 
-# Sets the max as 5 dynos from 9am-5pm local time, and 2 dynos otherwise.
-MAX_DYNOS = {
+# Sets the max as 5 processes from 9am-5pm local time, and 2 processes otherwise.
+MAX_PROCESSES = {
     "0:00": 2,
     "9:00": 5,
     "17:00": 2
@@ -282,7 +284,7 @@ TIME_ZONE = 'America/Vancouver'
 
 #### INCREMENT
 
-The number of dynos to add or remove on scaling.  Defaults to:
+The number of processes to add or remove on scaling.  Defaults to:
 
 ```python
 'INCREMENT': 1
@@ -314,8 +316,8 @@ If the number of consecutive responses for pass or fail are outside `MIN_MEASURE
     'NUMBER_OF_PASSES_TO_SCALE_DOWN_AFTER': 5,
     'MIN_MEASUREMENT_VALUE': 400,
     'MAX_MEASUREMENT_VALUE': 1200,
-    'MIN_DYNOS': 1,
-    'MAX_DYNOS': 3,
+    'MIN_PROCESSES': 1,
+    'MAX_PROCESSES': 3,
     'INCREMENT': 1,
     'POST_SCALE_WAIT_TIME_SECONDS': 5,
 }
@@ -330,8 +332,8 @@ If the average result over a given set is outside `MIN_MEASUREMENT_VALUE` or `MA
     'NUMBER_OF_MEASUREMENTS_TO_AVERAGE': 3,
     'MIN_MEASUREMENT_VALUE': 0,
     'MAX_MEASUREMENT_VALUE': 20,
-    'MIN_DYNOS': 1,
-    'MAX_DYNOS': 3,
+    'MIN_PROCESSES': 1,
+    'MAX_PROCESSES': 3,
     'INCREMENT': 1,
     'POST_SCALE_WAIT_TIME_SECONDS': 5,
 }
@@ -345,7 +347,7 @@ Scaling backends actually do the scaling.  Right now, there's only a heroku back
 
 ### HerokuScaleBackend
 
-Scales heroku dynos. Requires two settings to be passed:
+Scales heroku processes. Requires two settings to be passed:
 
 ```python
 {
@@ -388,7 +390,7 @@ NOTIFY_ON_EVERY_SCALE = False
 
 #### NOTIFY_IF_NEEDS_BELOW_MIN
 
-Send a notification if scaling down is called for, but we're already at `MIN_DYNOS`. Defaults to:
+Send a notification if scaling down is called for, but we're already at `MIN_PROCESSES`. Defaults to:
 
 ```python:
 NOTIFY_IF_NEEDS_BELOW_MIN = False
@@ -396,7 +398,7 @@ NOTIFY_IF_NEEDS_BELOW_MIN = False
 
 #### NOTIFY_IF_NEEDS_EXCEED_MAX
 
-Send a notification if scaling up is called for, but we're already at `MAX_DYNOS`. Defaults to:
+Send a notification if scaling up is called for, but we're already at `MAX_PROCESSES`. Defaults to:
 
 ```python:
 NOTIFY_IF_NEEDS_EXCEED_MAX = True
@@ -438,7 +440,7 @@ The best measurement url will test against the bottlenecks your app is most like
 
 ### Django's staticfiles gotcha, and some delightful side-effects of autoscale
 
-There's a truth about Heroku and all other cloud-based services:  If no traffic hits your dyno, they quietly shut it down until a request comes in.  Normally, that's not a big deal, but due to a confluence of staticfiles looking at the local filesystem for unique-filename caching, and heroku's read-only (ish) filesystem on dynos, the sanest way to handle static files on heroku is often with a Procfile like this:
+There's a truth about Heroku and all other cloud-based services:  If no traffic hits your dyno, they quietly shut it down until a request comes in.  Normally, that's not a big deal, but due to a confluence of staticfiles looking at the local filesystem for unique-filename caching, and heroku's read-only (ish) filesystem on processes, the sanest way to handle static files on heroku is often with a Procfile like this:
 
     web: project/manage.py collectstatic --noinput;python project/manage.py run_gunicorn -b "0.0.0.0:$PORT" --workers=4
 
