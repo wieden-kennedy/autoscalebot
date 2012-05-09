@@ -159,9 +159,9 @@ Returns:
 }
 ```
 
-### ServiceTimeBackend
+### HerokuServiceTimeBackend
 
-Scales based on the internal service time of the last measurement response.
+Scales on Heroku, based on the internal service time of the last measurement response.
 
 Settings: 
 
@@ -176,7 +176,7 @@ Returns:
 
 ```python
 {
-    'backend': 'ServiceTimeBackend',
+    'backend': 'HerokuServiceTimeBackend',
     'data': 350, // ms
     'success': True,  // assuming it was
 }

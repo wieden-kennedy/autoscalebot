@@ -1,10 +1,11 @@
+import re
 import urllib2
 from heroku_web_autoscale.backends.measurement.base import BaseMeasurementBackend
 from heroku_web_autoscale.logger import logger
 from heroku_web_autoscale import NotYetImplementedException
 
 
-class ServiceTimeBackend(BaseMeasurementBackend):
+class HerokuServiceTimeBackend(BaseMeasurementBackend):
     """
     This backend measures the amount of time a url takes to respond.
 
@@ -17,13 +18,13 @@ class ServiceTimeBackend(BaseMeasurementBackend):
     It returns a dictionary, with the following format:
 
     {
-        'backend': 'ServiceTimeBackend',
+        'backend': 'HerokuServiceTimeBackend',
         'data': 350, // ms
         'success': True,  // assuming it was
     }
     """
     def __init__(self, heroku_app, *args, **kwargs):
-        super(ServiceTimeBackend, self).__init__(*args, **kwargs)
+        super(HerokuServiceTimeBackend, self).__init__(*args, **kwargs)
         self.heroku_app = heroku_app
         self.url = kwargs.get("measurement_url", "/heroku-autoscale/measurement/")
         self.cleaned_url = self.url.replace("http://", "").replace("https://", "")
@@ -45,19 +46,22 @@ class ServiceTimeBackend(BaseMeasurementBackend):
 
         if success:
             line = False
-            for line in self.heroku_app.logs(num=1, tail=True):
-                if self.cleaned_url in line and "service=" in line:
-                    print line
-                    service_time = line
-                    raise NotYetImplementedException
-                    success = True
-                    break
+            service_pattern = r'service=([\d]*)ms'
+            try:
+                for line in self.heroku_app.logs(num=1, tail=True):
+                    if self.cleaned_url in line and "service=" in line:
+                        matches = re.findall(service_pattern, line)
+
+                        service_time = int(matches[0])
+                        success = True
+            except:
+                pass
 
         if not success:
             logger.debug("Measurement call not found in logs.")
 
         return {
-            'backend': 'ServiceTimeBackend',
+            'backend': 'HerokuServiceTimeBackend',
             'data': service_time,
             'success': success
         }
