@@ -10,8 +10,8 @@ class ResponseTimeBackend(BaseMeasurementBackend):
 
     It accepts the following parameters:
 
-    measurement_url, which defaults to "/heroku-autoscale/measurement/", and
-    max_response_time_in_seconds, which defaults to 30.
+    MEASUREMENT_URL, which defaults to "/heroku-autoscale/measurement/", and
+    MAX_RESPONSE_TIME_IN_SECONDS, which defaults to 30.
 
     It returns a dictionary, with the following format:
 

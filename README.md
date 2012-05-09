@@ -1,4 +1,4 @@
-heroku-web-autoscale has one simple aim: to make scaling paas processes something you can stop worrying about.  It autoscales heroku, both web and workers. It autoscales celery. It's easy to subclass, so you can hook into other paas platforms (and send us pull requests!)  It's super-flexible, simple, and smart. 
+heroku-web-autoscale has one simple aim: to make scaling PAAS processes something you can stop worrying about.  It autoscales heroku, both web and workers. It autoscales celery. It's easy to subclass, so you can hook into other PAAS platforms (and send us pull requests!)  It's super-flexible, simple, and smart. 
 
 It also integrates nicely with django.  It's made our lives much easier, and hopefully it can do the same for you.
 
@@ -9,7 +9,7 @@ Installing
 If you're using not django:
 ---------------------------
 
-1. ```pip install heroku-web-autoscale```, and add it to your `requirements.txt`
+1. ```pip install heroku-web-autoscale```
 2. Create a settings file somewhere in your `PYTHON_PATH`. We typically call it `autoscale_settings.py`, but you can call it whatever you like.
 3. Set `AUTOSCALE_SETTINGS` settings for your app, as well as any optional tuning settings. See autoscale_settings.py.dist for an example.
 4. Fire off this command: `heroku_web_autoscaler --settings=autoscale_settings`.  If you're on heroku, you'll want to add this to your `Procfile`:
@@ -22,7 +22,7 @@ If you're using not django:
 If you are using django:
 -----------------------
 
-1. ```pip install heroku-web-autoscale```, and add it to your `requirements.txt`
+1. ```pip install heroku-web-autoscale```
 2. Set `AUTOSCALE_SETTINGS` in your `settings.py`, as well as any optional tuning settings.
 3. If you want the built-in test view:
 
@@ -75,6 +75,10 @@ The example below shows appropriate settings for handling scaling for web and ce
 ```python
 AUTOSCALE_SETTINGS = {
     'web': {
+        # Scale our web workers to respond at "/my-custom-measurement/" within between 500 and 1000 ms. 
+        # Use the default caps for max and min, and wait a minute after scaling.
+        # Notify by sending an email to the admins, and printing to the console.
+
         'MEASUREMENT': {
             'BACKEND': 'heroku_web_autoscale.backends.measurement.ResponseTimeBackend',
             'SETTINGS': {
@@ -106,11 +110,18 @@ AUTOSCALE_SETTINGS = {
         }
     },
     'celery': {
+        # Scale our celery workers by the queue size. If the queue is bigger than 10,
+        # scale up. If it's zero, scale down. Notify only to the log.
+
         'MEASUREMENT': {
             'BACKEND': 'heroku_web_autoscale.backends.measurement.CeleryRedisQueueSizeBackend',
         },
         'DECISION': {
             'BACKEND': 'heroku_web_autoscale.backends.decision.AverageThresholdBackend',
+            'SETTINGS': {
+                'MIN_MEASUREMENT_VALUE': 0,
+                'MAX_MEASUREMENT_VALUE': 10,
+            }
         },
         'SCALING' : {
             'BACKEND': 'heroku_web_autoscale.backends.scaling.HerokuBackend'
