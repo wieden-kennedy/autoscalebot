@@ -11,10 +11,10 @@ class CeleryRedisQueueSizeBackend(BaseMeasurementBackend):
 
     It accepts the following parameters:
 
-    queue_name, which defaults to "celery",
-    host, which defaults to "localhost",
-    port, which defaults to "6379",
-    database_number, which defaults to "0"
+    QUEUE_NAME, which defaults to "celery",
+    HOST, which defaults to "localhost",
+    PORT, which defaults to "6379",
+    DATABASE_NUMBER, which defaults to "0", and
 
     It returns a dictionary, with the following format:
 
@@ -24,21 +24,17 @@ class CeleryRedisQueueSizeBackend(BaseMeasurementBackend):
         'success': True,  // assuming it was
     }
     """
-    def __init__(self, *args, **kwargs):
-        super(CeleryRedisQueueSizeBackend, self).__init__(*args, **kwargs)
-        self.queue_name = kwargs.get("queue_name", "celery")
-        self.host = kwargs.get("host", "localhost")
-        self.port = kwargs.get("port", "localhost")
-        self.database_number = kwargs.get("database_number", 0)
-        self.max_response_time_in_seconds = kwargs.get("max_response_time_in_seconds", 30)
 
     def measure(self, *args, **kwargs):
         success = True
         size = 0
 
         try:
-            r = redis.StrictRedis(host=self.host, port=self.port, db=self.database_number)
-            size = r.llen(self.queue_name)
+            r = redis.StrictRedis(host=self.settings.HOST,
+                                  port=self.settings.PORT,
+                                  db=self.settings.DATABASE_NUMBER,
+                                )
+            size = r.llen(self.settings.QUEUE_NAME)
             r.disconnect()
         except:
             success = False
@@ -46,7 +42,7 @@ class CeleryRedisQueueSizeBackend(BaseMeasurementBackend):
         if success:
             logger.debug("Queue size: %s." % size)
         else:
-            logger.debug("Error getting response from %s." % self.url)
+            logger.debug("Error getting response from celery: %s:%s/%s." % (self.settings.HOST, self.settings.PORT, self.settings.DATABASE_NUMBER,))
 
         return {
             'backend': 'CeleryRedisQueueSizeBackend',

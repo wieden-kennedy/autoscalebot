@@ -1,21 +1,15 @@
 from heroku_web_autoscale import NotYetImplementedException
+from heroku_web_autoscale.backends import BaseBackend
 
 
-class BaseScalingBackend(object):
+class BaseScalingBackend(BaseBackend):
     """
-    This is the base scaling class
+    This is the base scaling class.
+
+    Subclasses are expected to implement get_num_processes and
+    scale_to methods.
+
     """
-    def __init__(self, autoscalebot, *args, **kwargs):
-        self.autoscalebot = autoscalebot
-
-    def setup(self, *args, **kwargs):
-        super(BaseScalingBackend, self).setup(*args, **kwargs)
-
-    def teardown(self, *args, **kwargs):
-        super(BaseScalingBackend, self).teardown(*args, **kwargs)
-
-    def heartbeat_start(self, *args, **kwargs):
-        super(BaseScalingBackend, self).heartbeat_start(*args, **kwargs)
 
     @property
     def num_processes(self):

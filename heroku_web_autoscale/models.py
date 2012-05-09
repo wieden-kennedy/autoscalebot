@@ -65,8 +65,6 @@ class AutoscaleBot(object):
         r = self.get_measurement()
         self.add_to_history(r)
 
-
-
         num = self.get_num_of_processes_to_scale_to()
         did_scale = self.scaling_backend.scale_to(num)
         sleep_time = self.settings.MEASUREMENT.INTERVAL_IN_SECONDS

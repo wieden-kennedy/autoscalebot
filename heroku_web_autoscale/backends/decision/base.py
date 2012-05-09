@@ -1,25 +1,34 @@
 import datetime
-from heroku_web_autoscale import TOO_LOW, JUST_RIGHT, TOO_HIGH, NotYetImplementedException
-from heroku_web_autoscale.logger import logger
+from heroku_web_autoscale import NotYetImplementedException
+from heroku_web_autoscale.backends import BaseBackend
 
 
-class BaseDecisionBackend(object):
+class BaseDecisionBackend(BaseBackend):
     """
-    This is the base decision backend.
+    This is the base decision backend. Subclasses are expected to implement a
+    get_num_of_processes_to_scale_to method that returns an integer of the number
+    of processes desired.
+
+    The backend is responsible for making sense of the results, deciding what value
+    is needed, and making sure that value falls within the specified max and min caps.
+
+    If no change is needed, or an error occurs, the backend is expected to return the
+    current number of processes.
+
+    It uses the following settings:
+
+    MIN_PROCESSES, which defaults to 1,
+    MAX_PROCESSES, which defaults to 3,
+    INCREMENT, which defaults to 1, and
+    POST_SCALE_WAIT_TIME_SECONDS, which defaults to 5.
+
+    It returns an integer.
+
     """
-    def __init__(self, autoscalebot, *args, **kwargs):
-        self.autoscalebot = autoscalebot
+    def __init__(self, *args, **kwargs):
+        super(BaseDecisionBackend, self).__init__(*args, **kwargs)
         self.settings = self.autoscalebot.settings.DECISION
         self.results = self.autoscalebot.results
-
-    def setup(self, *args, **kwargs):
-        super(BaseDecisionBackend, self).setup(*args, **kwargs)
-
-    def teardown(self, *args, **kwargs):
-        super(BaseDecisionBackend, self).teardown(*args, **kwargs)
-
-    def heartbeat_start(self, *args, **kwargs):
-        super(BaseDecisionBackend, self).heartbeat_start(*args, **kwargs)
 
     def _cmp_time_string(self, a, b):
         a = a[0]
@@ -58,6 +67,27 @@ class BaseDecisionBackend(object):
             return self._get_current_value_from_time_dict(self.settings.MIN_PROCESSES, when=when)
         else:
             return self.settings.MIN_PROCESSES
+
+    @property
+    def outside_bounds(self):
+        return self.current_num_processes > self.max_num_processes or self.current_num_processes < self.min_num_processes
+
+    @property
+    def current_num_processes(self):
+        return self.autoscalebot.scaling_backend.get_num_processes
+
+    @property
+    def nearest_bound(self):
+        n = self.current_num_processes
+        if n > self.max_num_processes:
+            return self.max_num_processes
+        elif n < self.min_num_processes:
+            return self.min_num_processes
+        else:
+            if self.max_num_processes - n > n - self.min_num_processes:
+                return self.min_num_processes
+            else:
+                return self.max_num_processes
 
     def get_num_of_processes_to_scale_to(self):
         raise NotYetImplementedException

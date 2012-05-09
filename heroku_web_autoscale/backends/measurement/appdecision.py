@@ -25,16 +25,12 @@ class AppDecisionBackend(BaseMeasurementBackend):
         'success': True,  // assuming it was
     }
     """
-    def __init__(self, *args, **kwargs):
-        super(AppDecisionBackend, self).__init__(*args, **kwargs)
-        self.url = kwargs.get("measurement_url", "/heroku-autoscale/measurement/")
-        self.max_response_time_in_seconds = kwargs.get("max_response_time_in_seconds", 30)
 
     def measure(self, *args, **kwargs):
         success = True
 
         try:
-            response = urllib2.urlopen(self.url, None, self.max_response_time_in_seconds)
+            response = urllib2.urlopen(self.settings.MEASUREMENT_URL, None, self.settings.MAX_RESPONSE_TIME_IN_SECONDS)
             json_resp = response.read()
             assert json_resp is not None
             app_dict = json.loads(json_resp)

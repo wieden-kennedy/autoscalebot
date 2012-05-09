@@ -21,17 +21,13 @@ class ResponseTimeBackend(BaseMeasurementBackend):
         'success': True,  // assuming it was
     }
     """
-    def __init__(self, *args, **kwargs):
-        super(ResponseTimeBackend, self).__init__(*args, **kwargs)
-        self.url = kwargs.get("measurement_url", "/heroku-autoscale/measurement/")
-        self.max_response_time_in_seconds = kwargs.get("max_response_time_in_seconds", 30)
 
     def measure(self, *args, **kwargs):
         start_time = time.time()
         success = True
 
         try:
-            response = urllib2.urlopen(self.url, None, self.max_response_time_in_seconds)
+            response = urllib2.urlopen(self.settings.MEASUREMENT_URL, None, self.settings.MAX_RESPONSE_TIME_IN_SECONDS)
             assert response.read(1) is not None
         except:  # probably URLError, but anything counts.
             success = False
@@ -43,7 +39,7 @@ class ResponseTimeBackend(BaseMeasurementBackend):
             logger.debug("Response time: %sms." % diff)
         else:
             diff = 0
-            logger.debug("Error getting response from %s." % self.url)
+            logger.debug("Error getting response from %s." % self.settings.MEASUREMENT_URL)
 
         return {
             'backend': 'ResponseTimeBackend',
