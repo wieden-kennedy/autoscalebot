@@ -1,6 +1,5 @@
 from heroku_web_autoscale.backends.measurement.base import BaseMeasurementBackend
 from heroku_web_autoscale.logger import logger
-import redis
 
 
 class CeleryRedisQueueSizeBackend(BaseMeasurementBackend):
@@ -25,7 +24,18 @@ class CeleryRedisQueueSizeBackend(BaseMeasurementBackend):
     }
     """
 
+    def __init__(self, *args, **kwargs):
+        BACKEND_SETTINGS = {
+            "QUEUE_NAME": "celery",
+            "HOST": "localhost",
+            "PORT": "6379",
+            "DATABASE_NUMBER": "0",
+        }
+        super(CeleryRedisQueueSizeBackend, self).__init__(*args, **kwargs)
+        self.settings = BACKEND_SETTINGS.update(self.settings)
+
     def measure(self, *args, **kwargs):
+        import redis
         success = True
         size = 0
 

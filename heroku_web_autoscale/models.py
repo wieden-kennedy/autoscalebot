@@ -74,7 +74,7 @@ class AutoscaleBot(object):
             self.results = []
         time.sleep(sleep_time)
 
-    def bring_to_life(self, *args, **kwargs):
+    def setup(self, *args, **kwargs):
         self.measurement_backend.setup()
         self.decision_backend.setup()
         self.scaling_backend.setup()
@@ -83,7 +83,7 @@ class AutoscaleBot(object):
         while self.alive:
             self.heartbeat_and_wait()
 
-    def rest_in_peace(self, *args, **kwargs):
+    def teardown(self, *args, **kwargs):
         self.alive = False
         self.measurement_backend.teardown()
         self.decision_backend.teardown()

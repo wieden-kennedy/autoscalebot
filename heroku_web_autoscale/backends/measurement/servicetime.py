@@ -10,7 +10,8 @@ class HerokuServiceTimeBackend(BaseMeasurementBackend):
 
     It accepts the following parameters:
 
-    HEROKU_APP, which is a heroku app object from the heroku library,
+    HEROKU_APP, which is a heroku app object from the heroku library (optional:
+                it will use the app derived from the scaling backend if left out),
     MEASUREMENT_URL, which defaults to "/heroku-autoscale/measurement/", and
     MAX_RESPONSE_TIME_IN_SECONDS, which defaults to 30.
 
@@ -23,8 +24,17 @@ class HerokuServiceTimeBackend(BaseMeasurementBackend):
     }
     """
     def __init__(self, *args, **kwargs):
+        BACKEND_SETTINGS = {
+            "HEROKU_APP": None,
+            "MEASUREMENT_URL": "/heroku-autoscale/measurement/",
+            "MAX_RESPONSE_TIME_IN_SECONDS": 30,
+        }
         super(HerokuServiceTimeBackend, self).__init__(*args, **kwargs)
-        self.heroku_app = self.settings.scaling_backend.heroku_app
+        self.settings = BACKEND_SETTINGS.update(self.settings)
+        if self.settings.HEROKU_APP:
+            self.heroku_app = self.settings.HEROKU_APP
+        else:
+            self.heroku_app = self.settings.scaling_backend.heroku_app
         self.url = self.settings.MEASUREMENT_URL
         self.cleaned_url = self.url.replace("http://", "").replace("https://", "")
         if self.cleaned_url[-1] == "/":

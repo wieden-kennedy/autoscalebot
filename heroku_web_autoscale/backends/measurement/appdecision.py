@@ -12,8 +12,8 @@ class AppDecisionBackend(BaseMeasurementBackend):
 
     It accepts the following parameters:
 
-    measurement_url, which defaults to "/heroku-autoscale/measurement/", and
-    max_response_time_in_seconds, which defaults to 30.
+    MEASUREMENT_URL, which defaults to "/heroku-autoscale/measurement/", and
+    MAX_RESPONSE_TIME_IN_SECONDS, which defaults to 30.
 
     It returns a dictionary, with the following format:
 
@@ -25,6 +25,14 @@ class AppDecisionBackend(BaseMeasurementBackend):
         'success': True,  // assuming it was
     }
     """
+
+    def __init__(self, *args, **kwargs):
+        BACKEND_SETTINGS = {
+            "MEASUREMENT_URL": "/heroku-autoscale/measurement/",
+            "MAX_RESPONSE_TIME_IN_SECONDS": 30,
+        }
+        super(AppDecisionBackend, self).__init__(*args, **kwargs)
+        self.settings = BACKEND_SETTINGS.update(self.settings)
 
     def measure(self, *args, **kwargs):
         success = True

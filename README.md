@@ -32,7 +32,7 @@ If you are using django:
     INSTALLED_APPS += ("heroku_web_autoscale",)
     ```
 
-    urls.py: 
+    urls.py: (optional)
 
     ```python
     urlpatterns += patterns('',

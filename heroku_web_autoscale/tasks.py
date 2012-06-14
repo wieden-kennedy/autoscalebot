@@ -4,7 +4,7 @@ from heroku_web_autoscale.models import AutoscaleBot
 
 
 def _start_bot(bot):
-    return bot.bring_to_life()
+    return bot.setup()
 
 
 def start_autoscaler(settings=None, in_django=False):
@@ -23,7 +23,7 @@ def start_autoscaler(settings=None, in_django=False):
     except:
         # Gracefully shut down.
         for bot in bots:
-            bot.rest_in_peace()
+            bot.teardown()
 
         for p in processes:
             p.terminate()

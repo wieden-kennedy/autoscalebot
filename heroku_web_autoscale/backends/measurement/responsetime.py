@@ -22,6 +22,14 @@ class ResponseTimeBackend(BaseMeasurementBackend):
     }
     """
 
+    def __init__(self, *args, **kwargs):
+        BACKEND_SETTINGS = {
+            "MEASUREMENT_URL": "/heroku-autoscale/measurement/",
+            "MAX_RESPONSE_TIME_IN_SECONDS": 30,
+        }
+        super(ResponseTimeBackend, self).__init__(*args, **kwargs)
+        self.settings = BACKEND_SETTINGS.update(self.settings)
+
     def measure(self, *args, **kwargs):
         start_time = time.time()
         success = True

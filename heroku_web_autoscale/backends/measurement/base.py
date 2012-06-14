@@ -16,5 +16,10 @@ class BaseMeasurementBackend(BaseBackend):
 
     """
 
+    def __init__(self, *args, **kwargs):
+        DEFAULT_SETTINGS = {}
+        super(BaseMeasurementBackend, self).__init__(*args, **kwargs)
+        self.settings = DEFAULT_SETTINGS.update(self.autoscalebot.settings.MEASUREMENT)
+
     def measure(self, *args, **kwargs):
         raise NotYetImplementedException

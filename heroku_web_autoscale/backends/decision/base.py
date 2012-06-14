@@ -26,9 +26,17 @@ class BaseDecisionBackend(BaseBackend):
     It returns an integer.
 
     """
+
     def __init__(self, *args, **kwargs):
+        DEFAULT_SETTINGS = {
+            "MIN_PROCESSES": 1,
+            "MAX_PROCESSES": 3,
+            "INCREMENT": 1,
+            "POST_SCALE_WAIT_TIME_SECONDS": 5,
+            "HISTORY_LENGTH": 10
+        }
         super(BaseDecisionBackend, self).__init__(*args, **kwargs)
-        self.settings = self.autoscalebot.settings.DECISION
+        self.settings = DEFAULT_SETTINGS.update(self.autoscalebot.settings.DECISION)
         self.results = self.autoscalebot.results
 
     def _cmp_time_string(self, a, b):

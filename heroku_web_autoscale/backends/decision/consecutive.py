@@ -18,8 +18,14 @@ class ConsecutiveThresholdBackend(IncrementBasedDecisionBackend):
 
     """
     def __init__(self, *args, **kwargs):
+        BACKEND_SETTINGS = {
+            "NUMBER_OF_FAILS_TO_SCALE_UP_AFTER": 3,
+            "NUMBER_OF_PASSES_TO_SCALE_DOWN_AFTER": 5,
+            "MIN_MEASUREMENT_VALUE": 400,
+            "MAX_MEASUREMENT_VALUE": 1200,
+        }
         super(ConsecutiveThresholdBackend, self).__init__(*args, **kwargs)
-        pass
+        self.settings = BACKEND_SETTINGS.update(self.settings)
 
     @property
     def _intepreted_results(self):
