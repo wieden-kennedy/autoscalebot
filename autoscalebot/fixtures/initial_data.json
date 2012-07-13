@@ -1,0 +1,37 @@
+[
+    {
+        "pk": 1, 
+        "model": "autoscalebot.heartbeattestdata", 
+        "fields": {
+            "number": 0
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "autoscalebot.heartbeattestdata", 
+        "fields": {
+            "number": 1
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "autoscalebot.heartbeattestdata", 
+        "fields": {
+            "number": 2
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "autoscalebot.heartbeattestdata", 
+        "fields": {
+            "number": 3
+        }
+    }, 
+    {
+        "pk": 5, 
+        "model": "autoscalebot.heartbeattestdata", 
+        "fields": {
+            "number": 4
+        }
+    }
+]

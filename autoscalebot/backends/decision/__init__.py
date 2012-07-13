@@ -1,0 +1,2 @@
+from autoscalebot.backends.decision.average import AverageThresholdBackend
+from autoscalebot.backends.decision.consecutive import ConsecutiveThresholdBackend

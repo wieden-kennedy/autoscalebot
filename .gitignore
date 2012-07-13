@@ -1,7 +1,7 @@
 *.pyc
 .DS_Store
-heroku_web_autoscale.egg-info
-heroku_web_autoscale.egg-info/*
+autoscalebot.egg-info
+autoscalebot.egg-info/*
 autoscale_settings.py
 dist/*
 build/*

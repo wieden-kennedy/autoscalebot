@@ -1,4 +1,4 @@
-heroku-web-autoscale has one simple aim: to make scaling PAAS processes something you can stop worrying about.  It autoscales heroku, both web and workers. It autoscales celery. It's easy to subclass, so you can hook into other PAAS platforms (and send us pull requests!)  It's super-flexible, simple, and smart. 
+Autoscalebot has one simple aim: to make scaling PAAS processes something you can stop worrying about.  It autoscales heroku, both web and workers. It autoscales celery. It's easy to subclass, so you can hook into other PAAS platforms (and send us pull requests!)  It's super-flexible, simple, and smart. 
 
 It also integrates nicely with django.  It's made our lives much easier, and hopefully it can do the same for you.
 
@@ -9,41 +9,42 @@ Installing
 If you're using not django:
 ---------------------------
 
-1. ```pip install heroku-web-autoscale```
+
+1. ```pip install autoscalebot```, and add it to your `requirements.txt`
 2. Create a settings file somewhere in your `PYTHON_PATH`. We typically call it `autoscale_settings.py`, but you can call it whatever you like.
 3. Set `AUTOSCALE_SETTINGS` settings for your app, as well as any optional tuning settings. See autoscale_settings.py.dist for an example.
-4. Fire off this command: `heroku_web_autoscaler --settings=autoscale_settings`.  If you're on heroku, you'll want to add this to your `Procfile`:
+4. Fire off this command: `autoscalebot --settings=autoscale_settings`.  If you're on heroku, you'll want to add this to your `Procfile`:
 
     ```
-    autoscaleworker: heroku_web_autoscaler --settings=autoscale_settings
+    autoscaleworker: autoscalebot --settings=autoscale_settings
     ```
 
 
 If you are using django:
 -----------------------
 
-1. ```pip install heroku-web-autoscale```
+1. ```pip install autoscalebot```, and add it to your `requirements.txt`
 2. Set `AUTOSCALE_SETTINGS` in your `settings.py`, as well as any optional tuning settings.
 3. If you want the built-in test view:
+    
+    * settings.py: 
 
-    settings.py: 
+        ```python
+        INSTALLED_APPS += ("autoscalebot",)
+        ```
 
-    ```python
-    INSTALLED_APPS += ("heroku_web_autoscale",)
-    ```
+    * urls.py: 
 
-    urls.py: (optional)
-
-    ```python
-    urlpatterns += patterns('',
-        url(r'^', include('heroku_web_autoscale.urls', app_name="heroku_web_autoscale", namespace="heroku_web_autoscale"), ),
-    )
-    ```
+        ```python
+        urlpatterns += patterns('',
+            url(r'^', include('autoscalebot.urls', app_name="autoscalebot", namespace="autoscalebot"), ),
+        )
+        ```
 
 4. Fire up this command, or add it to your Procfile:
 
     ```
-    autoscaleworker: project/manage.py heroku_web_autoscaler
+    autoscaleworker: project/manage.py autoscalebot
     ```
 
 
@@ -53,7 +54,7 @@ Usage
 How it works
 ------------
 
-Broadly, heroku-autoscale does the following actions periodically:
+Broadly, autoscalebot does the following actions periodically:
 
 1. Measures to see how loaded your app is,
 2. Decides whether to scale up, down, or stay steady based on recent measurements,
@@ -80,7 +81,7 @@ AUTOSCALE_SETTINGS = {
         # Notify by sending an email to the admins, and printing to the console.
 
         'MEASUREMENT': {
-            'BACKEND': 'heroku_web_autoscale.backends.measurement.ResponseTimeBackend',
+            'BACKEND': 'autoscalebot.backends.measurement.ResponseTimeBackend',
             'SETTINGS': {
                 'MIN_TIME_MS': 500,
                 'MAX_TIME_MS': 1000,
@@ -89,13 +90,13 @@ AUTOSCALE_SETTINGS = {
             }
         },
         'DECISION': {
-            'BACKEND': 'heroku_web_autoscale.backends.decision.ConsecutiveThresholdBackend',
+            'BACKEND': 'autoscalebot.backends.decision.ConsecutiveThresholdBackend',
             'SETTINGS': {
                 'POST_SCALE_WAIT_TIME_SECONDS': 60,
             }
         },
         'SCALING' : {
-            'BACKEND': 'heroku_web_autoscale.backends.scaling.HerokuBackend'
+            'BACKEND': 'autoscalebot.backends.scaling.HerokuBackend'
             'SETTINGS': {
                 'APP_NAME': 'dancing-forest-1234',
                 'API_KEY': 'abcdef1234567890abcdef12',
@@ -103,8 +104,8 @@ AUTOSCALE_SETTINGS = {
         }
         'NOTIFICATION': {
             'BACKENDS': [
-                'heroku_web_autoscale.backends.notification.DjangoEmailBackend',
-                'heroku_web_autoscale.backends.notification.ConsoleBackend',
+                'autoscalebot.backends.notification.DjangoEmailBackend',
+                'autoscalebot.backends.notification.ConsoleBackend',
             ],
             'SETTINGS': {},
         }
@@ -114,17 +115,17 @@ AUTOSCALE_SETTINGS = {
         # scale up. If it's zero, scale down. Notify only to the log.
 
         'MEASUREMENT': {
-            'BACKEND': 'heroku_web_autoscale.backends.measurement.CeleryRedisQueueSizeBackend',
+            'BACKEND': 'autoscalebot.backends.measurement.CeleryRedisQueueSizeBackend',
         },
         'DECISION': {
-            'BACKEND': 'heroku_web_autoscale.backends.decision.AverageThresholdBackend',
+            'BACKEND': 'autoscalebot.backends.decision.AverageThresholdBackend',
             'SETTINGS': {
                 'MIN_MEASUREMENT_VALUE': 0,
                 'MAX_MEASUREMENT_VALUE': 10,
             }
         },
         'SCALING' : {
-            'BACKEND': 'heroku_web_autoscale.backends.scaling.HerokuBackend'
+            'BACKEND': 'autoscalebot.backends.scaling.HerokuBackend'
             'SETTINGS': {
                 'APP_NAME': 'dancing-forest-1234',
                 'API_KEY': 'abcdef1234567890abcdef12',
@@ -132,7 +133,7 @@ AUTOSCALE_SETTINGS = {
         }
         'NOTIFICATION': {
             'BACKENDS': [
-                'heroku_web_autoscale.backends.notification.LoggerBackend',
+                'autoscalebot.backends.notification.LoggerBackend',
             ],
         }
     },
@@ -142,7 +143,7 @@ AUTOSCALE_SETTINGS = {
 
 Backends
 --------
-To allow for tuning to your app's particular needs, heroku-autoscale provides backends for load measurement, decision-making, and notification.  You can also write your own backend, by subclassing the base class of any of them.  Pull requests for additional backends are also welcome!
+To allow for tuning to your app's particular needs, autoscalebot provides backends for load measurement, decision-making, and notification.  You can also write your own backend, by subclassing the base class of any of them.  Pull requests for additional backends are also welcome!
 
 There are four backends:  Measure, Decide, Scale, and Notify.  Here's what they do:
 
@@ -170,7 +171,7 @@ Settings:
 
 ```python
 {
-    'MEASUREMENT_URL': "/heroku-autoscale/measurement/",
+    'MEASUREMENT_URL': "/autoscalebot/measurement/",
     'MEASUREMENT_INTERVAL_IN_SECONDS': 30
 }
 ```
@@ -260,6 +261,7 @@ Returns:
 
 
 
+
 Decision Backends
 =================
 
@@ -313,6 +315,7 @@ The number of processes to add or remove on scaling.  Defaults to:
 ```python
 'INCREMENT': 1
 ```
+
 
 #### POST_SCALE_WAIT_TIME_SECONDS
 
@@ -462,6 +465,7 @@ Notes
 The best measurement url will test against the bottlenecks your app is most likely to have as it scales up.  The bundled django app provides a url that hits the cache, database, and disk IO.  To make autoscale fit your app, you're best off writing a custom view that emulates your user's most common actions.
 
 
+
 ### Django's staticfiles gotcha, and some delightful side-effects of autoscale
 
 There's a truth about Heroku and probably all smart cloud-based services:  If no traffic hits your instance, they quietly shut it down until a request comes in.  Normally, that's not a big deal, but due to a confluence of staticfiles looking at the local filesystem for unique-filename caching, and heroku's read-only (ish) filesystem on processes, the sanest way to handle static files on heroku is often with a Procfile like this:
@@ -469,7 +473,7 @@ There's a truth about Heroku and probably all smart cloud-based services:  If no
     web: project/manage.py collectstatic --noinput;python project/manage.py run_gunicorn -b "0.0.0.0:$PORT" --workers=4
 
 
-The problem, of course, is that once Heroku kills your dyno, the new one has to re-run collectstatic before it can serve the request - and that can take a while.  `django-heroku-autoscale`'s measurements have a very nice side effect: if you set them low enough (every couple minutes for small sites), and you're properly minimally sized, each dyno will get traffic, and Heroku will never kill them off.
+The problem, of course, is that once Heroku kills your dyno, the new one has to re-run collectstatic before it can serve the request - and that can take a while.  Autoscalebot's measurements have a very nice side effect: if you set them low enough (every couple minutes for small sites), and you're properly minimally sized, each dyno will get traffic, and Heroku will never kill them off.
 
 Roadmap 
 ------------------------------------
@@ -504,4 +508,4 @@ Credits:
 
 This package is not written, maintained, or in any way affiliated with Heroku.  "Heroku" is copyright Heroku.
 
-Code credits for heroku-web-autoscale itself are in the AUTHORS file.
+Code credits for autoscalebot itself are in the AUTHORS file.

@@ -1,1 +1,0 @@
-from heroku_web_autoscale.backends.scaling.heroku import HerokukScalingBackend
