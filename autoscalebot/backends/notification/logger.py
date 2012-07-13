@@ -1,7 +1,7 @@
 import logging
-from heroku_web_autoscale.backends.notification.base import NotificationBackend
+from autoscalebot.backends.notification.base import NotificationBackend
 
-logger = logging.getLogger("heroku_web_autoscale.LoggerBackend")
+logger = logging.getLogger("autoscalebot.LoggerBackend")
 
 
 class LoggerBackend(NotificationBackend):

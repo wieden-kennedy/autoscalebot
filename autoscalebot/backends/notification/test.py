@@ -1,4 +1,4 @@
-from heroku_web_autoscale.backends.notification.base import NotificationBackend
+from autoscalebot.backends.notification.base import NotificationBackend
 
 
 class TestBackend(NotificationBackend):

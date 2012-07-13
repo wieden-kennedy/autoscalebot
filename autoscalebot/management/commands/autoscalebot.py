@@ -2,11 +2,11 @@ from optparse import make_option
 from django.core.management.base import BaseCommand
 from django.conf import settings as django_settings
 
-from heroku_web_autoscale.tasks import start_autoscaler
+from autoscalebot.tasks import start_autoscaler
 
 
 class Command(BaseCommand):
-    help = """Runs the heroku autoscaling heartbeat,
+    help = """Runs the autoscalebot heartbeat,
               using django's settings."""
 
     def handle(self, *args, **options):

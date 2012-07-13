@@ -2,7 +2,7 @@ import tempfile
 from django.core.cache import cache
 from django.http import HttpResponse
 
-from heroku_web_autoscale.models import HeartbeatTestData
+from autoscalebot.models import HeartbeatTestData
 
 
 def heartbeat(request):
@@ -10,10 +10,10 @@ def heartbeat(request):
     rand_number = "%s" % HeartbeatTestData.objects.order_by('?')[0].number
 
     # Grab from the cache
-    cached_val = cache.get('heroku_web_autoscale-cached-value')
+    cached_val = cache.get('autoscalebot-cached-value')
     if not cached_val:
-        cache.set('heroku_web_autoscale-cached-value', "1234")
-        cached_val = cache.get('heroku_web_autoscale-cached-value')
+        cache.set('autoscalebot-cached-value', "1234")
+        cached_val = cache.get('autoscalebot-cached-value')
 
     # Read and write the filesystem
     t = tempfile.TemporaryFile()

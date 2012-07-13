@@ -2,8 +2,8 @@ import heroku
 import datetime
 import time
 import urllib2
-from heroku_web_autoscale import MissingParameter, TOO_LOW, JUST_RIGHT, TOO_HIGH
-from heroku_web_autoscale.logger import logger
+from autoscalebot import MissingParameter, TOO_LOW, JUST_RIGHT, TOO_HIGH
+from autoscalebot.logger import logger
 
 
 class HerokuAutoscaler(object):

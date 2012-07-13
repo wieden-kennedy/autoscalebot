@@ -4,9 +4,9 @@ import time
 import urllib2
 from nose.tools import assert_equals
 from nose.plugins.skip import SkipTest
-from heroku_web_autoscale import TOO_LOW, JUST_RIGHT, TOO_HIGH
-from heroku_web_autoscale.conf import AutoscaleSettings
-from heroku_web_autoscale.models import HerokuAutoscaler
+from autoscalebot import TOO_LOW, JUST_RIGHT, TOO_HIGH
+from autoscalebot.conf import AutoscaleSettings
+from autoscalebot.models import HerokuAutoscaler
 
 
 class TestSettings(AutoscaleSettings):
@@ -29,7 +29,7 @@ test_settings.NOTIFY_IF_SCALE_DIFF_EXCEEDS_THRESHOLD = None
 test_settings.NOTIFY_IF_SCALE_DIFF_EXCEEDS_PERIOD_IN_MINUTES = None
 test_settings.NOTIFY_IF_NEEDS_EXCEED_MAX = True
 test_settings.NOTIFY_IF_NEEDS_BELOW_MIN = True
-test_settings.NOTIFICATION_BACKENDS = ["heroku_web_autoscale.backends.notification.TestBackend", ]
+test_settings.NOTIFICATION_BACKENDS = ["autoscalebot.backends.notification.TestBackend", ]
 
 
 class MockHerokuProcesses:
@@ -512,8 +512,8 @@ class TestHerokuAutoscaler:
     def test_all_backends_are_called_on_notification(self):
         one_off_test_settings = copy(test_settings)
         one_off_test_settings.NOTIFICATION_BACKENDS = [
-                                                "heroku_web_autoscale.backends.notification.TestBackend",
-                                                "heroku_web_autoscale.backends.notification.TestBackend"
+                                                "autoscalebot.backends.notification.TestBackend",
+                                                "autoscalebot.backends.notification.TestBackend"
                                               ]
         self._test_scaler = MockHerokuAutoscaler(one_off_test_settings)
         assert_equals([len(b.messages) for b in self.test_scaler.backends], [0, 0])

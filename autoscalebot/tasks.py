@@ -1,8 +1,8 @@
 from time import sleep
 
-from heroku_web_autoscale import MissingParameter
-from heroku_web_autoscale.conf import AutoscaleSettings
-from heroku_web_autoscale.models import HerokuAutoscaler
+from autoscalebot import MissingParameter
+from autoscalebot.conf import AutoscaleSettings
+from autoscalebot.models import HerokuAutoscaler
 
 
 def start_autoscaler(settings=None, in_django=False):

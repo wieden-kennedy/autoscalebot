@@ -1,4 +1,6 @@
-heroku-web-autoscale has one simple aim: to make scaling heroku web dynos something you can stop worrying about.  It also integrates nicely with django.
+Autoscalebot has one simple aim: to make scaling paas services something you can stop worrying about.  Right now, it just supports heroku and simple request-time scaling. 
+
+The next version will support other paas stacks, as well as configurable measurement and decision backends. Autoscalebot also loves django, and plays nicely with it.
 
 
 Installing
@@ -7,7 +9,7 @@ Installing
 If you're using not django:
 ---------------------------
 
-1. ```pip install heroku-web-autoscale```, and add it to your `requirements.txt`
+1. ```pip install autoscalebot```, and add it to your `requirements.txt`
 
 2. Create a settings file somewhere in your `PYTHON_PATH`. We typically call it `autoscale_settings.py`, but you can call it whatever you like.
 3. Set these settings for your app, as well as any optional tuning settings. See autoscale_settings.py.dist for an example.
@@ -20,14 +22,14 @@ If you're using not django:
 4. Add autoscale to your `Procfile`:
 
     ```
-    autoscaleworker: heroku_web_autoscaler --settings=autoscale_settings
+    autoscaleworker: autoscalebotr --settings=autoscale_settings
     ```
 
 
 If you are using django:
 -----------------------
 
-1. ```pip install heroku-web-autoscale```, and add it to your `requirements.txt`
+1. ```pip install autoscalebot```, and add it to your `requirements.txt`
 
 2. Set these required settings in your `settings.py`, as well as any optional tuning settings.  Prefix all names on the settings list below with `AUTOSCALE_`
 
@@ -41,21 +43,21 @@ If you are using django:
     * settings.py: 
 
         ```python
-        INSTALLED_APPS += ("heroku_web_autoscale",)
+        INSTALLED_APPS += ("autoscalebot",)
         ```
 
     * urls.py: 
 
         ```python
         urlpatterns += patterns('',
-            url(r'^', include('heroku_web_autoscale.urls', app_name="heroku_web_autoscale", namespace="heroku_web_autoscale"), ),
+            url(r'^', include('autoscalebot.urls', app_name="autoscalebot", namespace="autoscalebot"), ),
         )
         ```
 
 4. Add it to your Procfile:
 
     ```
-    autoscaleworker: project/manage.py heroku_web_autoscaler
+    autoscaleworker: project/manage.py autoscalebotr
     ```
 
 
@@ -65,13 +67,13 @@ Usage
 How it works
 ------------
 
-Heroku-autoscale requests a heartbeat URL, and makes sure the response time is within the limits you've defined.  If it's outside those bounds enough times in a row, it scales up or down your app as needed.  Every part of that description is configurable via the settings.  Note that running heroku-autoscale will require one worker dyno, so if you're hobbying it and running one dyno most of the time, it won't save you any cash. It doesn't have to be run on heroku though - any internet-enabled computer will do.
+Autoscalebot requests a heartbeat URL, and makes sure the response time is within the limits you've defined.  If it's outside those bounds enough times in a row, it scales up or down your app as needed.  Every part of that description is configurable via the settings.  Note that running autoscalebot will require one worker dyno, so if you're hobbying it and running one dyno most of the time, it won't save you any cash. It doesn't have to be run on heroku though - any internet-enabled computer will do.
 
 
 Available settings
 -------------------
 
-Heroku-autoscale has a bunch of settings, so you should be able to tune it for most needs.
+Autoscalebot has a bunch of settings, so you should be able to tune it for most needs.
 
 * `HEROKU_APP_NAME` 
     
@@ -87,7 +89,7 @@ Heroku-autoscale has a bunch of settings, so you should be able to tune it for m
 
 * `HEARTBEAT_URL` 
 
-    * the url autoscale should hit, and expect a response in a given time. Defaults to `/heroku-autoscale/heartbeat/`
+    * the url autoscale should hit, and expect a response in a given time. Defaults to `/autoscalebot/heartbeat/`
 
 * `MAX_RESPONSE_TIME_IN_MS` 
 
@@ -153,7 +155,7 @@ Heroku-autoscale has a bunch of settings, so you should be able to tune it for m
     * (v0.3) The time period to count differentials over. Defaults to `None`.
 
 * `NOTIFY_IF_NEEDS_EXCEED_MAX`
-    * Call the `NOTIFICATION_BACKENDS` when the app is at `MAX_DYNOS`, and the reponses are too slow. This likely means that `MAX_DYNOS` is too low, but django-heroku-autoscale won't scale it up without your explicit instructions. Defaults to `True`.
+    * Call the `NOTIFICATION_BACKENDS` when the app is at `MAX_DYNOS`, and the reponses are too slow. This likely means that `MAX_DYNOS` is too low, but autoscalebot won't scale it up without your explicit instructions. Defaults to `True`.
 
 * `NOTIFY_IF_NEEDS_BELOW_MIN`
     * Call the `NOTIFICATION_BACKENDS` when the app is at `MIN_DYNOS`, and the reponses are below the scale down minimum (but above one).  Useful for learning if you have `MIN_DYNOS` set too low. Defaults to `False`.
@@ -171,7 +173,7 @@ Heroku-autoscale has a bunch of settings, so you should be able to tune it for m
 Notification
 ------------
 
-heroku-web-autoscale supports notification backends, so you can be notified when scale ups and downs happen.  It ships with a few backends. Pull requests for other backends are welcome!  Built in are:
+autoscalebot supports notification backends, so you can be notified when scale ups and downs happen.  It ships with a few backends. Pull requests for other backends are welcome!  Built in are:
 
 * `ConsoleBackend`, which prints messages to the console, 
 * `DjangoEmailBackend`, which emails the `ADMINS` when used in a django project,
@@ -182,8 +184,8 @@ To use backends, simply specify them in  `NOTIFICATION_BACKENDS`. For example:
 
 ```python
 NOTIFICATION_BACKENDS = [
-    'heroku_web_autoscale.backends.notification.DjangoEmailBackend',
-    'heroku_web_autoscale.backends.notification.ConsoleBackend',
+    'autoscalebot.backends.notification.DjangoEmailBackend',
+    'autoscalebot.backends.notification.ConsoleBackend',
 ]
 ```
 
@@ -197,12 +199,12 @@ The best heartbeat url will test against the bottlenecks your app is most likely
 Django's staticfiles gotcha, and some delightful side-effects of autoscale
 ----------------------------------------------------------------------------
 
-There's a truth about Heroku and all other cloud-based services:  If no traffic hits your dyno, they quietly shut it down until a request comes in.  Normally, that's not a big deal, but due to a confluence of staticfiles looking at the local filesystem for unique-filename caching, and heroku's read-only (ish) filesystem on dynos, the sanest way to handle static files on heroku is often with a Procfile like this:
+There's a truth about Heroku and most other cloud-based services:  If no traffic hits your dyno, they quietly shut it down until a request comes in.  Normally, that's not a big deal, but due to a confluence of staticfiles looking at the local filesystem for unique-filename caching, and heroku's read-only (ish) filesystem on dynos, the sanest way to handle static files on heroku is often with a Procfile like this:
 
     web: project/manage.py collectstatic --noinput;python project/manage.py run_gunicorn -b "0.0.0.0:$PORT" --workers=4
 
 
-The problem, of course, is that once Heroku kills your dyno, the new one has to re-run collectstatic before it can serve the request - and that can take a while.  `django-heroku-autoscale`'s heartbeats have a very nice side effect: if you set them low enough (every couple minutes for small sites), and you're properly minimally sized, each dyno will get traffic, and Heroku will never kill them off.
+The problem, of course, is that once Heroku kills your dyno, the new one has to re-run collectstatic before it can serve the request - and that can take a while.  `autoscalebot`'s heartbeats have a very nice side effect: if you set them low enough (every couple minutes for small sites), and you're properly minimally sized, each dyno will get traffic, and Heroku will never kill them off.
 
 Roadmap 
 ------------------------------------
@@ -247,4 +249,4 @@ Credits:
 
 This package is not written, maintained, or in any way affiliated with Heroku.  "Heroku" is copyright Heroku.
 
-Code credits for heroku-web-autoscale itself are in the AUTHORS file.
+Code credits for autoscalebot itself are in the AUTHORS file.
