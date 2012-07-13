@@ -22,7 +22,7 @@ If you're using not django:
 4. Add autoscale to your `Procfile`:
 
     ```
-    autoscaleworker: autoscalebotr --settings=autoscale_settings
+    autoscaleworker: autoscalebot --settings=autoscale_settings
     ```
 
 
@@ -57,7 +57,7 @@ If you are using django:
 4. Add it to your Procfile:
 
     ```
-    autoscaleworker: project/manage.py autoscalebotr
+    autoscaleworker: project/manage.py autoscalebot
     ```
 
 

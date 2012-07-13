@@ -28,6 +28,6 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
     entry_points={
-        'console_scripts': ['autoscalebotr = autoscalebot.cli:main'],
+        'console_scripts': ['autoscalebot = autoscalebot.cli:main'],
     },
 )
