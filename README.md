@@ -209,22 +209,11 @@ The problem, of course, is that once Heroku kills your dyno, the new one has to 
 Roadmap 
 ------------------------------------
 
-*0.3*
+*3.0*
 
-* Advanced scaling mode:
-    * autoscaler passes the request timestamp and the current number of dynos
-    * the app returns with JSON indicating the scaling needs:
-
-        ```json
-        {
-            'web': 'scale_up',
-            'celery': 'steady'
-        }
-        ```
-
+* Major overhaul - switching to pluggable backends for monitoring, decision, scaling, and notification.
 * Time-based notification thresholds
 * Setting to have a minimum cool-off time between scales
-
 
 
 
@@ -232,7 +221,7 @@ Recent updates (full log in CHANGES)
 ------------------------------------
 
 
-*0.2*
+*2.0*
 
 * Better django integration includes a heartbeat url and view
 * Time-based MAX and MIN settings

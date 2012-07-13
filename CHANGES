@@ -1,4 +1,4 @@
-*0.2*
+*2.0*
 
 * Better django integration includes a heartbeat url and view
 * Time-based MAX and MIN settings
