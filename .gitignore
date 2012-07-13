@@ -5,3 +5,6 @@ autoscalebot.egg-info/*
 autoscale_settings.py
 dist/*
 build/*
+docs/_build
+docs/_static
+docs/_templates
