@@ -57,7 +57,7 @@ If you are using django:
 4. Add it to your Procfile:
 
     ```
-    autoscaleworker: project/manage.py autoscalebot
+    autoscaleworker: project/manage.py run_autoscalebot
     ```
 
 
