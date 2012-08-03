@@ -44,7 +44,7 @@ If you're using not django:
 
 
 If you are using django:
------------------------
+------------------------
 
 1. ```pip install autoscalebot```, and add it to your `requirements.txt`
 2. Set `AUTOSCALE_SETTINGS` in your `settings.py`, as well as any optional tuning settings.
@@ -130,7 +130,11 @@ AUTOSCALE_SETTINGS = {
                 'autoscalebot.backends.notification.DjangoEmailBackend',
                 'autoscalebot.backends.notification.ConsoleBackend',
             ],
-            'SETTINGS': {},
+            'SETTINGS': {
+                'NOTIFY_ON': ["MEASUREMENT", "SCALE, "BELOW_MIN", "ABOVE_MAX", "TOO_RAPID"],
+                'TOO_RAPID_NUM_SCALES': 5,
+                'TOO_RAPID_PERIOD_MINUTES': 2
+            },
         }
     },
     'celery': {
