@@ -1,37 +1,55 @@
 import time
 
 
-def _get_instantiated_class(self, backend_name, context):
-     # Split up the backend and its module
+def _get_instantiated_class(backend_settings, autoscalebot):
+    # Split up the backend and its module
+    print "backend_settings", backend_settings
+    backend_name = backend_settings.BACKEND
     module_name = backend_name[:backend_name.rfind(".")]
     class_name = backend_name[backend_name.rfind(".") + 1:]
     # Import the module
     m = __import__(module_name, globals(), locals(), [class_name, ])
     # Instantiate the class, passing this autoscalebot, and return it
-    return getattr(m, class_name)(context)
+    return getattr(m, class_name)(autoscalebot)
 
 
 class AutoscaleBot(object):
-    def __init__(self, process_name, settings, *args, **kwargs):
+    def __init__(self, nickname, process_settings, *args, **kwargs):
         super(AutoscaleBot, self).__init__(*args, **kwargs)
-        self.process_name = process_name
-        self.settings = settings
+        self.nickname = nickname
+        self.settings = process_settings
         self.results = []
         self.measurement_backend = None
         self.decision_backend = None
         self.scaling_backend = None
         self.alive = True
-        self.notifcation_backends = []
+        self.notification_backends = []
 
         # Setup backends
-        self.measurement_backend = _get_instantiated_class(settings.MEASUREMENT.BACKEND, self)
-        self.decision_backend = _get_instantiated_class(settings.DECISION.BACKEND, self)
-        self.scaling_backend = _get_instantiated_class(settings.SCALING.BACKEND, self)
+        self.measurement_backend = _get_instantiated_class(self.settings.MEASUREMENT, self)
+        self.decision_backend = _get_instantiated_class(self.settings.DECISION, self)
+        self.scaling_backend = _get_instantiated_class(self.settings.SCALING, self)
 
-        # Setup notification backends.
-        if settings.NOTIFICATION.BACKENDS:
-            for b in settings.NOTIFICATION.BACKENDS:
-                self.notification_backends.append(_get_instantiated_class(settings.MEASUREMENT.BACKEND, self))
+        # # Setup notification backends.
+        # if self.settings.NOTIFICATION.BACKENDS:
+        #     for b in self.settings.NOTIFICATION.BACKENDS:
+        #         self.notification_backends.append(_get_instantiated_class(b, self))
+
+        backend_and_setting_pairs = [
+            (self.measurement_backend, self.settings.MEASUREMENT.SETTINGS),
+            (self.decision_backend, self.settings.DECISION.SETTINGS),
+            (self.scaling_backend, self.settings.SCALING.SETTINGS),
+        ]
+
+        # Add backend defaults to settings
+        for backend, backend_settings in backend_and_setting_pairs:
+            print backend_settings
+            for setting_key in ["DEFAULT_BASE_SETTINGS", "DEFAULT_BACKEND_SETTINGS"]:
+                if hasattr(backend, setting_key):
+                    for k, v in getattr(backend, setting_key).iteritems():
+                        if not hasattr(backend_settings, k):
+                            setattr(backend_settings, k, v)
+        print self.settings.__dict__
 
     def notification(self, fn, *args, **kwargs):
         for b in self.notification_backends:

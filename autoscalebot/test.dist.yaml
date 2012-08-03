@@ -1,0 +1,58 @@
+web:
+    min_processes: 1
+    max_processes: 3
+    increment: 1
+    post_scale_wait_time_seconds: 5
+    history_length: 10
+
+    measurement:
+        backend: ResponseTimeBackend
+        min_time_ms: 500
+        max_time_ms: 1000
+        measurement_url: /my-custom-measurement/
+        measurement_interval_in_seconds: 30
+
+
+    decision:
+        backend: ConsecutiveThresholdBackend
+        post_scale_wait_time_seconds: 60
+
+    scaling:
+        backend: HerokuBackend
+        app_name: dancing-forest-1234
+        api_key: abcdef1234567890abcdef12
+        worker_name: web
+
+    notification:
+        -   backend: DjangoEmailBackend
+            notify_on: [SCALE, BELOW_MIN, ABOVE_MAX]
+
+        -   backend: ConsoleBackend
+            notify_on: [MEASUREMENT, SCALE, BELOW_MIN, ABOVE_MAX, TOO_RAPID]
+            too_rapid_num_scales: 5
+            too_rapid_period_minutes: 10
+
+celery:
+    min_processes: 1
+    max_processes: 5
+    increment: 1
+    post_scale_wait_time_seconds: 5
+    history_length: 5
+
+    measurement:
+        backend: CeleryRedisQueueSizeBackend
+
+    decision:
+        backend: AverageThresholdBackend
+        min_measurement_value: 0
+        max_measurement_value: 10
+
+    scaling:
+        backend: HerokuBackend
+        app_name: dancing-forest-1234
+        api_key: abcdef1234567890abcdef12
+        worker_name: celery
+
+    notification:
+        - backend: LoggerBackend
+

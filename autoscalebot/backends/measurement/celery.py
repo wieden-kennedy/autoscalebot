@@ -15,7 +15,7 @@ class CeleryRedisQueueSizeBackend(BaseMeasurementBackend):
     PORT, which defaults to "6379",
     DATABASE_NUMBER, which defaults to "0", and
 
-    It returns a dictionary, with the following format:
+    Its measure method returns a dictionary, with the following format:
 
     {
         'backend': 'CeleryRedisQueueSizeBackend',
@@ -25,14 +25,13 @@ class CeleryRedisQueueSizeBackend(BaseMeasurementBackend):
     """
 
     def __init__(self, *args, **kwargs):
-        BACKEND_SETTINGS = {
+        self.DEFAULT_BACKEND_SETTINGS = {
             "QUEUE_NAME": "celery",
             "HOST": "localhost",
             "PORT": "6379",
             "DATABASE_NUMBER": "0",
         }
         super(CeleryRedisQueueSizeBackend, self).__init__(*args, **kwargs)
-        self.settings = BACKEND_SETTINGS.update(self.settings)
 
     def measure(self, *args, **kwargs):
         import redis

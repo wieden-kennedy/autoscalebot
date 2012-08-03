@@ -1,5 +1,6 @@
 from autoscalebot import NotYetImplementedException
 from autoscalebot.backends import BaseBackend
+from autoscalebot.util import Struct
 
 
 class BaseMeasurementBackend(BaseBackend):
@@ -17,9 +18,12 @@ class BaseMeasurementBackend(BaseBackend):
     """
 
     def __init__(self, *args, **kwargs):
-        DEFAULT_SETTINGS = {}
+        self.DEFAULT_BASE_SETTINGS = {}
         super(BaseMeasurementBackend, self).__init__(*args, **kwargs)
-        self.settings = DEFAULT_SETTINGS.update(self.autoscalebot.settings.MEASUREMENT)
 
     def measure(self, *args, **kwargs):
         raise NotYetImplementedException
+
+    @property
+    def settings(self):
+        return self.autoscalebot.settings.MEASUREMENT.SETTINGS

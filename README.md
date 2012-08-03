@@ -107,7 +107,9 @@ AUTOSCALE_SETTINGS = {
                 'autoscalebot.backends.notification.DjangoEmailBackend',
                 'autoscalebot.backends.notification.ConsoleBackend',
             ],
-            'SETTINGS': {},
+            'SETTINGS': {
+                'NOTIFY_ON': ["SCALE, "BELOW_MIN", "ABOVE_MAX"],
+            },
         }
     },
     'celery': {

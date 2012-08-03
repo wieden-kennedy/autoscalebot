@@ -12,8 +12,8 @@ def start_autoscaler(settings=None, in_django=False):
 
     bots = []
     processes = []
-    for process_name, process in settings:
-        bots.append(AutoscaleBot(process_name, settings))
+    for nickname, process_settings in settings:
+        bots.append(AutoscaleBot(nickname, process_settings))
 
     try:
         for bot in bots:

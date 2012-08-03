@@ -16,13 +16,12 @@ class AverageThresholdBackend(IncrementBasedDecisionBackend):
 
     """
     def __init__(self, *args, **kwargs):
-        BACKEND_SETTINGS = {
+        self.DEFAULT_BACKEND_SETTINGS = {
             "NUMBER_OF_MEASUREMENTS_TO_AVERAGE": 3,
             "MIN_MEASUREMENT_VALUE": 0,
             "MAX_MEASUREMENT_VALUE": 20,
         }
         super(AverageThresholdBackend, self).__init__(*args, **kwargs)
-        self.settings = BACKEND_SETTINGS.update(self.settings)
 
     def heartbeat_start(self, *args, **kwargs):
         super(AverageThresholdBackend, self).heartbeat_start(*args, **kwargs)

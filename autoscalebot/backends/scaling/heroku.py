@@ -2,17 +2,16 @@ import heroku
 from autoscalebot.backends.scaling.base import BaseScalingBackend
 
 
-class HerokuScalingBackend(BaseScalingBackend):
+class HerokuBackend(BaseScalingBackend):
     """
     This is the base scaling class
     """
     def __init__(self, *args, **kwargs):
-        super(HerokuScalingBackend, self).__init__(*args, **kwargs)
-        self.settings = self.autoscalebot.settings.SCALING
-        self.process_name = self.autoscalebot.process_name
+        self.DEFAULT_BACKEND_SETTINGS = {}
+        super(HerokuBackend, self).__init__(*args, **kwargs)
 
     def heartbeat_start(self, *args, **kwargs):
-        super(HerokuScalingBackend, self).heartbeat_start(*args, **kwargs)
+        super(HerokuBackend, self).heartbeat_start(*args, **kwargs)
         self._num_processes = None
 
     @property
@@ -24,7 +23,7 @@ class HerokuScalingBackend(BaseScalingBackend):
 
     def scale_to(self, num_requested):
         try:
-            self.heroku_app.processes[self.process_name].scale(num_requested)
+            self.heroku_app.processes[self.settings.process_name].scale(num_requested)
             self.notification("notify_scaled")
 
         except:

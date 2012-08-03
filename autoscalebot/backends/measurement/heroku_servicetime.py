@@ -15,7 +15,7 @@ class HerokuServiceTimeBackend(BaseMeasurementBackend):
     MEASUREMENT_URL, which defaults to "/autoscalebot/measurement/", and
     MAX_RESPONSE_TIME_IN_SECONDS, which defaults to 30.
 
-    It returns a dictionary, with the following format:
+    Its measure method returns a dictionary, with the following format:
 
     {
         'backend': 'HerokuServiceTimeBackend',
@@ -24,13 +24,13 @@ class HerokuServiceTimeBackend(BaseMeasurementBackend):
     }
     """
     def __init__(self, *args, **kwargs):
-        BACKEND_SETTINGS = {
+        self.DEFAULT_BACKEND_SETTINGS = {
             "HEROKU_APP": None,
             "MEASUREMENT_URL": "/autoscalebot/measurement/",
             "MAX_RESPONSE_TIME_IN_SECONDS": 30,
         }
         super(HerokuServiceTimeBackend, self).__init__(*args, **kwargs)
-        self.settings = BACKEND_SETTINGS.update(self.settings)
+
         if self.settings.HEROKU_APP:
             self.heroku_app = self.settings.HEROKU_APP
         else:

@@ -28,20 +28,30 @@ class BaseDecisionBackend(BaseBackend):
     """
 
     def __init__(self, *args, **kwargs):
-        DEFAULT_SETTINGS = {
+        self.DEFAULT_BASE_SETTINGS = {
             "MIN_PROCESSES": 1,
             "MAX_PROCESSES": 3,
             "INCREMENT": 1,
             "POST_SCALE_WAIT_TIME_SECONDS": 5,
             "HISTORY_LENGTH": 10
         }
+
         super(BaseDecisionBackend, self).__init__(*args, **kwargs)
-        self.settings = DEFAULT_SETTINGS.update(self.autoscalebot.settings.DECISION)
         self.results = self.autoscalebot.results
 
+    @property
+    def settings(self):
+        return self.autoscalebot.settings.DECISION.SETTINGS
+
     def _cmp_time_string(self, a, b):
-        a = a[0]
-        b = b[0]
+        """
+        Compares two times, of format 5:30 or 17:00.
+        Returns -1 if b is later than a,
+                 1 if a is later than b, and
+                 0 if the times are the same.
+        """
+        a = a.replace(":", "")
+        b = b.replace(":", "")
         a_hour = int(a[:a.find(":")])
         b_hour = int(b[:b.find(":")])
         if a_hour < b_hour:

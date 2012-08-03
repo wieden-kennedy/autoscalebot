@@ -97,7 +97,7 @@ The autoscale settings allow for choice and configuration of the measurement, de
 The example below shows appropriate settings for handling scaling for web and celery processes on heroku. 
 
 ```python
-AUTOSCALE_SETTINGS = {
+AUTOSCALEBOTS = {
     'web': {
         # Scale our web workers to respond at "/my-custom-measurement/" within between 500 and 1000 ms. 
         # Use the default caps for max and min, and wait a minute after scaling.
@@ -108,7 +108,7 @@ AUTOSCALE_SETTINGS = {
             'SETTINGS': {
                 'MIN_TIME_MS': 500,
                 'MAX_TIME_MS': 1000,
-                'MEASUREMENT_URL' = "/my-custom-measurement/",
+                'MEASUREMENT_URL': "/my-custom-measurement/",
                 'MEASUREMENT_INTERVAL_IN_SECONDS': 30,
             }
         },
@@ -119,23 +119,25 @@ AUTOSCALE_SETTINGS = {
             }
         },
         'SCALING' : {
-            'BACKEND': 'autoscalebot.backends.scaling.HerokuBackend'
+            'BACKEND': 'autoscalebot.backends.scaling.HerokuBackend',
             'SETTINGS': {
                 'APP_NAME': 'dancing-forest-1234',
                 'API_KEY': 'abcdef1234567890abcdef12',
+                'WORKER_NAME': 'web'
             }
-        }
+        },
         'NOTIFICATION': {
             'BACKENDS': [
                 'autoscalebot.backends.notification.DjangoEmailBackend',
                 'autoscalebot.backends.notification.ConsoleBackend',
             ],
             'SETTINGS': {
-                'NOTIFY_ON': ["MEASUREMENT", "SCALE, "BELOW_MIN", "ABOVE_MAX", "TOO_RAPID"],
+                'NOTIFY_ON': ["MEASUREMENT", "SCALE", "BELOW_MIN", "ABOVE_MAX", "TOO_RAPID"],
                 'TOO_RAPID_NUM_SCALES': 5,
                 'TOO_RAPID_PERIOD_MINUTES': 2
             },
         }
+
     },
     'celery': {
         # Scale our celery workers by the queue size. If the queue is bigger than 10,

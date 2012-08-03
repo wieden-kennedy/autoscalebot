@@ -22,3 +22,7 @@ class BaseScalingBackend(BaseBackend):
 
     def get_num_processes(self):
         raise NotYetImplementedException
+
+    @property
+    def settings(self):
+        return self.autoscalebot.settings.SCALING.SETTINGS

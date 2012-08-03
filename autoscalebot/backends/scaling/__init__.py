@@ -1,1 +1,1 @@
-from autoscalebot.backends.scaling.heroku import HerokuScalingBackend
+from autoscalebot.backends.scaling.heroku import HerokuBackend
