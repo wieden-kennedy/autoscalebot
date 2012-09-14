@@ -17,31 +17,28 @@ class BaseDecisionBackend(BaseBackend):
 
     It uses the following settings:
 
-    MIN_PROCESSES, which defaults to 1,
-    MAX_PROCESSES, which defaults to 3,
-    INCREMENT, which defaults to 1,
-    POST_SCALE_WAIT_TIME_SECONDS, which defaults to 5, and
-    HISTORY_LENGTH, which defaults to 10.
-
-    It returns an integer.
+    min_processes, which defaults to 1,
+    max_processes, which defaults to 3,
+    increment, which defaults to 1,
+    post_scale_delay_seconds, which defaults to 0, and
 
     """
 
     def __init__(self, *args, **kwargs):
-        self.DEFAULT_BASE_SETTINGS = {
-            "MIN_PROCESSES": 1,
-            "MAX_PROCESSES": 3,
-            "INCREMENT": 1,
-            "POST_SCALE_WAIT_TIME_SECONDS": 5,
-            "HISTORY_LENGTH": 10
-        }
-
         super(BaseDecisionBackend, self).__init__(*args, **kwargs)
         self.results = self.autoscalebot.results
 
     @property
     def settings(self):
         return self.autoscalebot.settings.DECISION.SETTINGS
+
+    def default_settings(self):
+        return {
+            "min_processes": 1,
+            "max_processes": 3,
+            "increment": 1,
+            "post_scale_delay_seconds": 0
+        }
 
     def _cmp_time_string(self, a, b):
         """

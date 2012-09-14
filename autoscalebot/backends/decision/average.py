@@ -15,13 +15,16 @@ class AverageThresholdBackend(IncrementBasedDecisionBackend):
     processes to scale to.
 
     """
-    def __init__(self, *args, **kwargs):
-        self.DEFAULT_BACKEND_SETTINGS = {
-            "NUMBER_OF_MEASUREMENTS_TO_AVERAGE": 3,
-            "MIN_MEASUREMENT_VALUE": 0,
-            "MAX_MEASUREMENT_VALUE": 20,
-        }
-        super(AverageThresholdBackend, self).__init__(*args, **kwargs)
+
+    def default_settings(self):
+        base_defaults = super(self, "default_settings")()
+        base_defaults.update({
+            "scale_down_value": 0,
+            "scale_down_sample_size": 5,
+            "scale_up_value": 20,
+            "scale_up_sample_size": 3,
+        })
+        return base_defaults
 
     def heartbeat_start(self, *args, **kwargs):
         super(AverageThresholdBackend, self).heartbeat_start(*args, **kwargs)

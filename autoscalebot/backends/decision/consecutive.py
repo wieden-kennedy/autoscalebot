@@ -17,14 +17,16 @@ class ConsecutiveThresholdBackend(IncrementBasedDecisionBackend):
     processes to scale to.
 
     """
-    def __init__(self, *args, **kwargs):
-        self.DEFAULT_BACKEND_SETTINGS = {
-            "NUMBER_OF_FAILS_TO_SCALE_UP_AFTER": 3,
-            "NUMBER_OF_PASSES_TO_SCALE_DOWN_AFTER": 5,
-            "MIN_MEASUREMENT_VALUE": 400,
-            "MAX_MEASUREMENT_VALUE": 1200,
-        }
-        super(ConsecutiveThresholdBackend, self).__init__(*args, **kwargs)
+
+    def default_settings(self):
+        base_defaults = super(self, "default_settings")()
+        base_defaults.update({
+            "scale_down_value": 400,
+            "scale_down_sample_size": 5,
+            "scale_up_value": 1200,
+            "scale_up_sample_size": 3,
+        })
+        return base_defaults
 
     @property
     def _intepreted_results(self):

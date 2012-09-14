@@ -22,12 +22,14 @@ class ResponseTimeBackend(BaseMeasurementBackend):
     }
     """
 
-    def __init__(self, *args, **kwargs):
-        self.DEFAULT_BACKEND_SETTINGS = {
-            "MEASUREMENT_URL": "/autoscalebot/measurement/",
-            "MAX_RESPONSE_TIME_IN_SECONDS": 30,
-        }
-        super(ResponseTimeBackend, self).__init__(*args, **kwargs)
+    def default_settings(self):
+        base_defaults = super(self, "default_settings")()
+        base_defaults.update({
+            "url": "/autoscalebot/custom-measurement-url/",
+            "seconds_between_measurement": 30,
+            "timeout_in_seconds": 30,
+        })
+        return base_defaults
 
     def measure(self, *args, **kwargs):
         start_time = time.time()

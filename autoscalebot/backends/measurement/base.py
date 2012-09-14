@@ -18,8 +18,12 @@ class BaseMeasurementBackend(BaseBackend):
     """
 
     def __init__(self, *args, **kwargs):
-        self.DEFAULT_BASE_SETTINGS = {}
         super(BaseMeasurementBackend, self).__init__(*args, **kwargs)
+
+    def default_settings(self):
+        return {
+            "seconds_between_measurement": 30,
+        }
 
     def measure(self, *args, **kwargs):
         raise NotYetImplementedException

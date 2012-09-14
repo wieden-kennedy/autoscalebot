@@ -6,7 +6,7 @@ from autoscalebot.logger import logger
 
 class HerokuServiceTimeBackend(BaseMeasurementBackend):
     """
-    This backend measures the amount of time a url takes to respond.
+    This backend measures the internal service time of the last test request on heroku
 
     It accepts the following parameters:
 
@@ -24,11 +24,6 @@ class HerokuServiceTimeBackend(BaseMeasurementBackend):
     }
     """
     def __init__(self, *args, **kwargs):
-        self.DEFAULT_BACKEND_SETTINGS = {
-            "HEROKU_APP": None,
-            "MEASUREMENT_URL": "/autoscalebot/measurement/",
-            "MAX_RESPONSE_TIME_IN_SECONDS": 30,
-        }
         super(HerokuServiceTimeBackend, self).__init__(*args, **kwargs)
 
         if self.settings.HEROKU_APP:
@@ -39,6 +34,14 @@ class HerokuServiceTimeBackend(BaseMeasurementBackend):
         self.cleaned_url = self.url.replace("http://", "").replace("https://", "")
         if self.cleaned_url[-1] == "/":
             self.cleaned_url = self.cleaned_url[:-1]
+
+    def default_settings(self):
+        base_defaults = super(self, "default_settings")()
+        base_defaults.update({
+            "heroku_app": "my-app",
+            "timeout_in_seconds": 30,
+        })
+        return base_defaults
 
     def measure(self, *args, **kwargs):
         success = True

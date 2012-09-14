@@ -33,6 +33,16 @@ class CeleryRedisQueueSizeBackend(BaseMeasurementBackend):
         }
         super(CeleryRedisQueueSizeBackend, self).__init__(*args, **kwargs)
 
+    def default_settings(self):
+        base_defaults = super(self, "default_settings")()
+        base_defaults.update({
+            "queue_name": "celery",
+            "host": "localhost",
+            "port": "6379",
+            "database_number": "0",
+        })
+        return base_defaults
+
     def measure(self, *args, **kwargs):
         import redis
         success = True
