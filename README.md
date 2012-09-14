@@ -1,7 +1,8 @@
-Autoscalebot has one simple aim: to make scaling paas services something you can stop worrying about.  Right now, it just supports heroku and simple request-time scaling. 
+Autoscalebot has one simple aim: to make scaling paas services something you can stop worrying about.  Right now, it just supports heroku and simple request-time scaling.
 
 The next version will support other paas stacks, as well as configurable measurement and decision backends. Autoscalebot also loves django, and plays nicely with it.
 
+[![Build Status](https://secure.travis-ci.org/wieden-kennedy/autoscalebot.png)](http://travis-ci.org/wieden-kennedy/autoscalebot)
 
 Installing
 ==========
@@ -39,14 +40,14 @@ If you are using django:
     ```
 
 3. If you want the built-in test view:
-    
-    * settings.py: 
+
+    * settings.py:
 
         ```python
         INSTALLED_APPS += ("autoscalebot",)
         ```
 
-    * urls.py: 
+    * urls.py:
 
         ```python
         urlpatterns += patterns('',
@@ -75,39 +76,39 @@ Available settings
 
 Autoscalebot has a bunch of settings, so you should be able to tune it for most needs.
 
-* `HEROKU_APP_NAME` 
-    
+* `HEROKU_APP_NAME`
+
     * *Required*.  The name of your app, ie "dancing-forest-1234".
 
 * `HEROKU_API_KEY`
-    
+
     * *Required*. Your API key - you can get it on your [account page](https://api.heroku.com/account).
 
-* `HEARTBEAT_INTERVAL_IN_SECONDS` 
+* `HEARTBEAT_INTERVAL_IN_SECONDS`
 
     * the number of seconds between heartbeat checks. Defaults to `30`.
 
-* `HEARTBEAT_URL` 
+* `HEARTBEAT_URL`
 
     * the url autoscale should hit, and expect a response in a given time. Defaults to `/autoscalebot/heartbeat/`
 
-* `MAX_RESPONSE_TIME_IN_MS` 
+* `MAX_RESPONSE_TIME_IN_MS`
 
     * the maximum time a response can take, before it counts as "too slow". Defaults to `1000`.
 
-* `MIN_RESPONSE_TIME_IN_MS` 
+* `MIN_RESPONSE_TIME_IN_MS`
 
     * the minimum time a response can take, before it counts as "too fast". Defaults to `200`.
 
-* `NUMBER_OF_FAILS_TO_SCALE_UP_AFTER` 
+* `NUMBER_OF_FAILS_TO_SCALE_UP_AFTER`
 
     * the number of consecutive fails (timeouts or 500s) before autoscale adds dynos. Defaults to `3`.
 
-* `NUMBER_OF_PASSES_TO_SCALE_DOWN_AFTER` 
+* `NUMBER_OF_PASSES_TO_SCALE_DOWN_AFTER`
 
     * the number of consecutive passes before autoscale removes dynos. Defaults to `5`.
 
-* `MAX_DYNOS` 
+* `MAX_DYNOS`
 
     * the absolute maximum number of dynos. Default to `3`. This value is either an integer, or a dictionary of time/max pairs.  E.g.
 
@@ -126,7 +127,7 @@ Autoscalebot has a bunch of settings, so you should be able to tune it for most 
         TIME_ZONE = 'America/Vancouver'
         ```
 
-* `MIN_DYNOS` 
+* `MIN_DYNOS`
 
     * the absolute minimum number of dynos. Default to `1`. This value is either an integer, or a dictionary of time/max pairs. E.g.
 
@@ -142,16 +143,16 @@ Autoscalebot has a bunch of settings, so you should be able to tune it for most 
         }
         ```
 
-* `INCREMENT` 
+* `INCREMENT`
     * the number of dynos to add or remove on scaling. Defaults to `1`.
 
 * `NOTIFICATION_BACKENDS`
     * A list of backends to call for all notify requests. Defaults to `[]`
 
-* `NOTIFY_IF_SCALE_DIFF_EXCEEDS_THRESHOLD` 
+* `NOTIFY_IF_SCALE_DIFF_EXCEEDS_THRESHOLD`
     * (v0.3) Paired with the setting below, this setting will call the `NOTIFICATION_BACKENDS` if the scale differential in the given time period exceeds the threshold.  For example, if I see a scale of more than 10 dynos within 30 minutes, something intesting is happening with the site.  I'd probably like to know.  Defaults to `None`, and is disabled.
 
-* `NOTIFY_IF_SCALE_DIFF_EXCEEDS_PERIOD_IN_MINUTES` 
+* `NOTIFY_IF_SCALE_DIFF_EXCEEDS_PERIOD_IN_MINUTES`
     * (v0.3) The time period to count differentials over. Defaults to `None`.
 
 * `NOTIFY_IF_NEEDS_EXCEED_MAX`
@@ -175,7 +176,7 @@ Notification
 
 autoscalebot supports notification backends, so you can be notified when scale ups and downs happen.  It ships with a few backends. Pull requests for other backends are welcome!  Built in are:
 
-* `ConsoleBackend`, which prints messages to the console, 
+* `ConsoleBackend`, which prints messages to the console,
 * `DjangoEmailBackend`, which emails the `ADMINS` when used in a django project,
 * `LoggerBackend`, which sends messages to the python logger.
 * `TestBackend`, which adds messages to a list, and is used for unit testing.
@@ -206,7 +207,7 @@ There's a truth about Heroku and most other cloud-based services:  If no traffic
 
 The problem, of course, is that once Heroku kills your dyno, the new one has to re-run collectstatic before it can serve the request - and that can take a while.  `autoscalebot`'s heartbeats have a very nice side effect: if you set them low enough (every couple minutes for small sites), and you're properly minimally sized, each dyno will get traffic, and Heroku will never kill them off.
 
-Roadmap 
+Roadmap
 ------------------------------------
 
 *3.0*
