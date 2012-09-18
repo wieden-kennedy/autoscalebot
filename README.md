@@ -2,7 +2,7 @@ Autoscalebot has one simple aim: to make scaling paas services something you can
 
 The next version will support other paas stacks, as well as configurable measurement and decision backends. Autoscalebot also loves django, and plays nicely with it.
 
-[![Build Status](https://secure.travis-ci.org/wieden-kennedy/autoscalebot.png)](http://travis-ci.org/wieden-kennedy/autoscalebot)
+[![Build Status](https://secure.travis-ci.org/wieden-kennedy/autoscalebot.png?branch=master)](http://travis-ci.org/wieden-kennedy/autoscalebot)
 
 Installing
 ==========
